@@ -1,0 +1,20 @@
+name: tda-dev
+dependencies:
+- python=3
+- cython
+- pandas
+- requests
+- pylint
+- spyder
+- openpyxl
+- xlrd
+- xlsxwriter
+- matplotlib
+- scikit-learn
+- plotly
+- pip
+- pytest
+- pytest-cov
+
+- pip:
+  - python-dotenv
