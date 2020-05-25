@@ -7,3 +7,5 @@ results/
 *.png
 
 *.csv
+
+*.pyc
