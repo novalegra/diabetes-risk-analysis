@@ -1,6 +1,9 @@
 
-data/
 
 results/
 
 .DS_Store
+
+*.png
+
+*.csv
