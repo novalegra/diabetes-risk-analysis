@@ -8,9 +8,28 @@ from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime
 
+from bolus_risk_analysis import find_bgs
+
 # Load in data
 path = str(Path(__file__).parent.parent)
 initial_df = pd.read_csv(path + "/data/risk-data-sample.csv")
+
+# Get a dataframe with only the BG values
+bgs = initial_df[
+    [
+        # Categorical
+        "type", # type of data: CBG, basal, bolus, etc
+        "time",
+
+        # Numerical
+        "value" # BG reading in mmol/L
+    ]
+]
+bg_map = {"cbg": 2}
+bgs = bgs.replace({"type": bg_map})
+bgs = bgs.loc[(bgs["type"] == 2)]
+bgs.dropna(inplace=True)
+bgs["time"] = pd.to_datetime(bgs["time"], infer_datetime_format=True)
 
 df = initial_df[
     [
@@ -62,9 +81,12 @@ ax.set_zlabel("Rate")
 plt.title("KNN To Classify Temp Basals", fontsize=14)
 plt.show()
 
-# Export our abnormal rows
-df = df.query('abnormal == 1')
-df.sort_values("time", inplace=True)
-time = datetime.now().strftime("%H:%M:%S")
-path = "abnormal_basals_" + time + ".csv"
-df.to_csv(path)
+# Select our abnormal rows
+abnormals = df.query('abnormal == 1')
+abnormals = abnormals.sort_values("time")
+abnormals["bgs_before"] = abnormals["time"].apply(find_bgs, args=(120, 5))
+abnormals["bgs_after"] = abnormals["time"].apply(find_bgs, args=(5, 120))
+
+time = datetime.now().strftime("%H_%M_%S")
+file_name = "abnormal_basals_" + time
+abnormals.to_csv(file_name + ".csv")
