@@ -30,9 +30,18 @@ def return_first_matching_bg(time_string, before_offset, after_offset):
     return result[0] if len(result) > 0 else df["bgInput"].mean()
 
 
-# Load in data
-path = str(Path(__file__).parent.parent)
-initial_df = pd.read_csv(path + "/data/risk-data-sample.csv")
+# Get data paths
+path = None
+while path == None or len(path) < 5:
+    path = input("Path to input file: ")
+
+try:
+    export_path = input("Output file path (default: current folder): ")
+except:
+    export_path = ""
+
+# Read in data
+initial_df = pd.read_csv(path)
 
 # Get a dataframe with only the BG values
 bgs = initial_df[
@@ -119,6 +128,7 @@ abnormals = abnormals.sort_values("time")
 abnormals["bgs_before"] = abnormals["time"].apply(find_bgs, args=(120, 5))
 abnormals["bgs_after"] = abnormals["time"].apply(find_bgs, args=(5, 120))
 
+# Export the data
 time = datetime.now().strftime("%H_%M_%S")
 file_name = "abnormal_boluses_" + time
-abnormals.to_csv(file_name + ".csv")
+abnormals.to_csv(export_path + file_name + ".csv")

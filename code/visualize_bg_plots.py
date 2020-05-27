@@ -2,14 +2,26 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 from math import isnan
+from os.path import exists
 
-# Load in data
-path = str(Path(__file__).parent.parent)
-file_name = input("File name: ")
-df = pd.read_csv(path + "/data/" + file_name + ".csv")
+# Get user inputs
+path = None
+while path == None or not exists(path):
+    path = str(Path(__file__).parent.parent) + "/data/abnormal_boluses_07_50_13.csv"#input("Path to input file: ")
+
+df = pd.read_csv(path)
+
+# Get index to examine
+file_index = -1
+while file_index < 2:
+    try:
+        file_index = int(input("What row number would you like visualized? (indexed including the csv header) "))
+    except:
+        continue
+# convert to zero-indexed location
+file_index -= 2
 
 while True:
-    file_index = int(input("What row number would you like visualized? (indexed including the csv header) ")) - 2
     # Get times & values
     ''' 
     NOTE: this makes the assumption that the 'before' and 'after' values 
@@ -70,3 +82,10 @@ while True:
         )
     plt.savefig("bg_graph_for_row_" + str(file_index + 2) + ".png")
     plt.show()
+
+    try:
+        file_index = int(input("What row number would you like visualized? (indexed including the csv header) ")) - 2
+        assert(file_index > 1)
+    except:
+        print("Quitting...")
+        break
