@@ -89,10 +89,19 @@ three_hour_avg["bin"] = pd.cut(
     labels=alphabet
 )
 
-ten_min_avg.to_csv("ten_min_avg" + ".csv")
-half_hour_avg.to_csv("half_hour_avg" + ".csv")
-hour_avg.to_csv("hour_avg" + ".csv")
-three_hour_avg.to_csv("three_hour_sax" + ".csv")
+# Assign letter to missing data points
+ten_min_avg["bin"] = ten_min_avg["bin"].cat.add_categories(nan_letter)
+ten_min_avg["bin"].fillna(nan_letter, inplace=True)
+
+half_hour_avg["bin"] = half_hour_avg["bin"].cat.add_categories(nan_letter)
+half_hour_avg["bin"].fillna(nan_letter, inplace=True)
+
+hour_avg["bin"] = hour_avg["bin"].cat.add_categories(nan_letter)
+hour_avg["bin"].fillna(nan_letter, inplace=True)
+
+three_hour_avg["bin"] = three_hour_avg["bin"].cat.add_categories(nan_letter)
+three_hour_avg["bin"].fillna(nan_letter, inplace=True)
+
 # Export the data
 ten_min_avg.to_csv(export_path + "ten_min_avg" + ".csv")
 half_hour_avg.to_csv(export_path + "half_hour_avg" + ".csv")
