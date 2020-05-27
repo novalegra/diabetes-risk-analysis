@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pylab as plt
+
 from pyod.models.knn import KNN
 from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
