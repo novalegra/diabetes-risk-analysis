@@ -9,3 +9,5 @@ results/
 *.csv
 
 *.pyc
+
+code/.vscode/
