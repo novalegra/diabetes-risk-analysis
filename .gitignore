@@ -11,3 +11,7 @@ results/
 *.pyc
 
 code/.vscode/
+
+code/testing_regression.py
+
+*.xlsx
