@@ -1,20 +1,15 @@
-name: tda-dev
+name: risk-analysis
+channels:
+  - conda-forge
+  - defaults
 dependencies:
-- python=3
-- cython
-- pandas
-- requests
-- pylint
-- spyder
-- openpyxl
-- xlrd
-- xlsxwriter
-- matplotlib
-- scikit-learn
-- plotly
-- pip
-- pytest
-- pytest-cov
-
-- pip:
-  - python-dotenv
+  - python=3
+  - numpy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - scipy
+  - stumpy
+  - pip
+  - pip:
+    - pyod==0.7.9
