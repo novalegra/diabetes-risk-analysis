@@ -6,12 +6,12 @@
 2. In a terminal, navigate to the directory where the environment.yml 
 is located (likely the diabetes-risk-analysis folder).
 3. Run `conda env create`; this will download all of the package dependencies
-and install them in a virtual environment named tda-dev. PLEASE NOTE: this
+and install them in a virtual environment named risk-analysis. PLEASE NOTE: this
 may take up to 30 minutes to complete.
 
 ### To use the Virtual Environment
-In Bash run `source activate tda-dev`, or in the Anaconda Prompt
-run `conda activate tda-dev` to start the environment.
+In Bash run `source activate risk-analysis`, or in the Anaconda Prompt
+run `conda activate risk-analysis` to start the environment.
 
 Run `deactivate` to stop the environment.
 
