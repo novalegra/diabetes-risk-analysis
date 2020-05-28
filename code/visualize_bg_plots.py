@@ -7,16 +7,25 @@ from os.path import exists
 # Get user inputs
 path = None
 while path == None or not exists(path):
-    path = str(Path(__file__).parent.parent) + "/data/abnormal_boluses_07_50_13.csv"#input("Path to input file: ")
+    path = input("Path to input file: ")
 
+try:
+    export_path = input("Output file path (default: current folder): ")
+except:
+    export_path = ""
+
+is_bolus_data = "bolus" in path
+
+# Load the data in
 df = pd.read_csv(path)
 
 # Get index to examine
 file_index = -1
-while file_index < 2:
+while file_index < 2 or file_index > len(df) + 1:
     try:
         file_index = int(input("What row number would you like visualized? (indexed including the csv header) "))
     except:
+        print("Invalid entry; row must be between 2 and the size of the dataframe")
         continue
 # convert to zero-indexed location
 file_index -= 2
@@ -45,7 +54,7 @@ while True:
         ] if len(df["bgs_after"].iloc[file_index]) > 2 else []
 
     event_bg = (
-        df["bgInput"].iloc[file_index] if not isnan(df["bgInput"].iloc[file_index])
+        df["bgInput"].iloc[file_index] if is_bolus_data and not isnan(df["bgInput"].iloc[file_index])
         else (before_event_values[-1] + after_event_values[0]) / 2
     )
 
@@ -71,21 +80,24 @@ while True:
     plt.scatter(all_times, all_bg_values)
     # Plot the BG at the abnormal event as a star
     plt.scatter([0], [event_bg], marker="o", s=100)
-    plt.title(
-        "Row " + str(file_index + 2) 
-        + ", carb-based residual = "
-        + str(
-            round(
-                df["totalAmount"].iloc[file_index] 
-                - df["carbInput"].iloc[file_index] / df["insulinCarbRatio"].iloc[file_index], 2)
+    if is_bolus_data:
+        plt.title(
+            "Row " + str(file_index + 2) 
+            + ", carb-based residual = "
+            + str(
+                round(
+                    df["totalAmount"].iloc[file_index] 
+                    - df["carbInput"].iloc[file_index] / df["insulinCarbRatio"].iloc[file_index], 2)
+                )
             )
-        )
-    plt.savefig("bg_graph_for_row_" + str(file_index + 2) + ".png")
+    else:
+        plt.title("Row " + str(file_index + 2))
+    plt.savefig(export_path + "bg_graph_for_row_" + str(file_index + 2) + ".png")
     plt.show()
 
     try:
         file_index = int(input("What row number would you like visualized? (indexed including the csv header) ")) - 2
-        assert(file_index > 1)
+        assert(file_index >= 0 and file_index < len(df) + 1)
     except:
         print("Quitting...")
         break
