@@ -26,7 +26,7 @@ Not all of the fields below are present for every type of data (ex: basals have 
 
 “time”: time of the event/reading
 
-“value”: BG reading in mmol/L, multiply by 18 to get it in mg/dL (pretty sure it’s only if the data type is ‘cbg’, aka CGM)
+“value”: BG reading in mmol/L, multiply by 18 to get it in mg/dL
 
 “subtype”: type of bolus (normal, extended, dual wave)
 
@@ -40,8 +40,18 @@ Not all of the fields below are present for every type of data (ex: basals have 
 
 “insulinOnBoard”: IOB at time of event, this isn’t present for all the bolus events
 
-“bgInput”: BG that was put into bolus calculator in mmol/L  (in my code, if this field isn’t present, then it’ll be filled in with a CGM value from within the last 5 mins)
+“bgInput”: BG that was put into bolus calculator in mmol/L
 
 “insulinSensitivity”: insulin to BG ratio
 
-This definitely doesn't cover all of the datatypes, but if there’s a field you’re wondering about, there’s a good chance you can get more info at https://developer.tidepool.org/data-model/, which is their data model documentation.
+“deliveryType”: type of basal (scheduled, aka from the programmed basal schedule, vs temp)
+
+“duration”: length of the basal
+
+“percent”: percent of the regularly-scheduled basal rate
+
+“rate”: the absolute basal rate
+
+
+This doesn't cover all of the datatypes, but if there’s a field you’re wondering about, there’s a good chance you can get more info at https://developer.tidepool.org/data-model/, which is Tidepool's data model documentation.
+
