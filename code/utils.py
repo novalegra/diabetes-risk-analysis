@@ -28,18 +28,28 @@ def annotate_with_sax(time_string, sax_df, sax_interval_length, time_length_of_s
 
     start = (
         date + pd.Timedelta(minutes = time_length_of_string)
-        ).round(rounding_string) if time_length_of_string < 0 else date
+        ).round(rounding_string) if time_length_of_string < 0 else date.round(rounding_string)
     end = (
         date + pd.Timedelta(minutes = time_length_of_string)
-        ).round(rounding_string) if time_length_of_string > 0 else date
+        ).round(rounding_string) if time_length_of_string > 0 else date.round(rounding_string)
 
-    string = "".join (
-        list(
-            sax_df.loc[
-                (sax_df["time"] >= start) 
-                & (sax_df["time"] <= end)
-            ]["bin"]
+    if time_length_of_string < 0:
+        string = "".join (
+            list(
+                sax_df.loc[
+                    (sax_df["time"] >= start) 
+                    & (sax_df["time"] < end)
+                ]["bin"]
+            )
         )
-    )
+    else:
+        string = "".join (
+            list(
+                sax_df.loc[
+                    (sax_df["time"] > start) 
+                    & (sax_df["time"] <= end)
+                ]["bin"]
+            )
+        )
 
     return string
