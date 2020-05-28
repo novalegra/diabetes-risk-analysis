@@ -81,3 +81,21 @@ def annotate_with_sax(date, sax_df, sax_interval_length, time_length_of_string):
         )
 
     return string
+
+"""
+df - dataframe containing dosing data
+
+TODO: this could be more efficent if we used numpy arrays? also we're computing the TDD too many times
+"""
+def find_TDD(date, df, dummy_val):
+    midnight = pd.DatetimeIndex([date]).normalize()[0]
+    mins_in_day = 24 * 60
+
+    boluses = find_values(midnight, df, 0, mins_in_day + 1, "totalBolusAmount")
+    basals = find_values(midnight, df, 0, mins_in_day + 1, "rate")
+
+    return sum(boluses) + sum(basals)
+
+
+def get_column_TDDs(df):
+    return df["time"].apply(find_TDD, args=(df))
