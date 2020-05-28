@@ -9,31 +9,17 @@ from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime, timedelta
 
-# Offsets are in minutes
-def find_bgs(time_string, before_offset, after_offset):
-    date = pd.to_datetime(time_string)
-    start = date - pd.Timedelta(minutes = before_offset)
-    end = date + pd.Timedelta(minutes = after_offset)
-
-    relevent_rows = list(
-        bgs.loc[
-            (bgs["time"] > start) 
-            & (bgs["time"] < end)
-        ].drop_duplicates(subset="value")["value"]
-    )
-    return relevent_rows
-
-
-def return_first_matching_bg(time_string, before_offset, after_offset):
-    result = find_bgs(time_string, before_offset, after_offset)
-
-    return result[0] if len(result) > 0 else df["bgInput"].mean()
+from utils import find_bgs, return_first_matching_bg, annotate_with_sax
 
 
 # Get data paths
 path = None
 while path == None or len(path) < 5:
     path = input("Path to input file: ")
+
+sax_input_path = str(Path(__file__).parent.parent) + "/results/ten_min_avg.csv"
+sax_interval = 10
+bg_consideration_interval = 180
 
 try:
     export_path = input("Output file path (default: current folder): ")
@@ -42,6 +28,8 @@ except:
 
 # Read in data
 initial_df = pd.read_csv(path)
+sax_df = pd.read_csv(sax_input_path)
+sax_df["time"] = pd.to_datetime(sax_df["time"], infer_datetime_format=True)
 
 # Get a dataframe with only the BG values
 bgs = initial_df[
@@ -90,8 +78,22 @@ df["totalAmount"] = df["normal"] + df["extended"]
 df.dropna(subset=["totalAmount", "insulinCarbRatio", "insulinSensitivity"], inplace=True)
 # Fill BG input columns
 df["bgInput"].fillna(
-    df["time"].apply(return_first_matching_bg, args=(5, 5)), 
+    df["time"].apply(return_first_matching_bg, args=(df, bgs, 5, 5)), 
     inplace=True
+)
+
+# Convert time strings to pandas datetime format
+#df["time"] = pd.to_datetime(df["time"], infer_datetime_format=True)
+
+# Get the SAX strings
+df["before_event_strings"] = df["time"].apply(
+    annotate_with_sax, 
+    args=(sax_df, sax_interval, -bg_consideration_interval)
+)
+
+df["after_event_strings"] = df["time"].apply(
+    annotate_with_sax, 
+    args=(sax_df, sax_interval, bg_consideration_interval)
 )
 
 # Print some summary statistics
@@ -125,8 +127,8 @@ plt.show()
 # Select our abnormal rows
 abnormals = df.query('abnormal == 1')
 abnormals = abnormals.sort_values("time")
-abnormals["bgs_before"] = abnormals["time"].apply(find_bgs, args=(120, 5))
-abnormals["bgs_after"] = abnormals["time"].apply(find_bgs, args=(5, 120))
+abnormals["bgs_before"] = abnormals["time"].apply(find_bgs, args=(bgs, 120, 5))
+abnormals["bgs_after"] = abnormals["time"].apply(find_bgs, args=(bgs, 5, 120))
 
 # Export the data
 time = datetime.now().strftime("%H_%M_%S")

@@ -8,21 +8,27 @@ from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime
 
-from bolus_risk_analysis import find_bgs
+from utils import find_bgs, annotate_with_sax
 
 # Load in data
 # Get data paths
 path = None
 while path == None or len(path) < 5:
-    path = input("Path to input file: ")
+    path = str(Path(__file__).parent.parent) + "/data/risk-data-sample.csv"#input("Path to input file: ")
+
+sax_input_path = str(Path(__file__).parent.parent) + "/results/ten_min_avg.csv"
+sax_interval = 10
+bg_consideration_interval = 180
 
 try:
-    export_path = input("Output file path (default: current folder): ")
+    export_path = str(Path(__file__).parent.parent) + "/results/"#input("Output file path (default: current folder): ")
 except:
     export_path = ""
 
 # Read in data
 initial_df = pd.read_csv(path)
+sax_df = pd.read_csv(sax_input_path)
+sax_df["time"] = pd.to_datetime(sax_df["time"], infer_datetime_format=True)
 
 # Get a dataframe with only the BG values
 bgs = initial_df[
@@ -63,6 +69,17 @@ df = df.loc[(df["type"] == 0) & (df["deliveryType"] == 0)]
 # Drop if any values are NaN
 df = df.dropna()
 
+# Get the SAX strings
+df["before_event_strings"] = df["time"].apply(
+    annotate_with_sax, 
+    args=(sax_df, sax_interval, -bg_consideration_interval)
+)
+
+df["after_event_strings"] = df["time"].apply(
+    annotate_with_sax, 
+    args=(sax_df, sax_interval, bg_consideration_interval)
+)
+
 # Print some summary statistics
 print("Head")
 print(df.head(), "\n")
@@ -71,7 +88,6 @@ print("Shape", shape)
 print(df.describe().apply(lambda s: s.apply(lambda x: format(x, "f"))))
 
 # will want to play around with n_neighbors
-print(df.columns)
 model = KNN()
 model.fit(df[["duration", "percent", "rate"]])
 
@@ -89,13 +105,13 @@ ax.set_xlabel("Duration")
 ax.set_ylabel("Percent")
 ax.set_zlabel("Rate")
 plt.title("KNN To Classify Temp Basals", fontsize=14)
-plt.show()
+#plt.show()
 
 # Select our abnormal rows
 abnormals = df.query('abnormal == 1')
 abnormals = abnormals.sort_values("time")
-abnormals["bgs_before"] = abnormals["time"].apply(find_bgs, args=(120, 5))
-abnormals["bgs_after"] = abnormals["time"].apply(find_bgs, args=(5, 120))
+abnormals["bgs_before"] = abnormals["time"].apply(find_bgs, args=(bgs, 120, 5))
+abnormals["bgs_after"] = abnormals["time"].apply(find_bgs, args=(bgs, 5, 120))
 
 # Export the data
 time = datetime.now().strftime("%H_%M_%S")
