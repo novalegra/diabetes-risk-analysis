@@ -8,44 +8,19 @@ from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime
 
-from utils import find_bgs, annotate_with_sax
-
 # Load in data
 # Get data paths
 path = None
 while path == None or len(path) < 5:
-    path = str(Path(__file__).parent.parent) + "/data/risk-data-sample.csv"#input("Path to input file: ")
-
-sax_input_path = str(Path(__file__).parent.parent) + "/results/ten_min_avg.csv"
-sax_interval = 10
-bg_consideration_interval = 180
+    path = input("Path to input file: ")
 
 try:
-    export_path = str(Path(__file__).parent.parent) + "/results/"#input("Output file path (default: current folder): ")
+    export_path = input("Output file path (default: current folder): ")
 except:
     export_path = ""
 
 # Read in data
 initial_df = pd.read_csv(path)
-sax_df = pd.read_csv(sax_input_path)
-sax_df["time"] = pd.to_datetime(sax_df["time"], infer_datetime_format=True)
-
-# Get a dataframe with only the BG values
-bgs = initial_df[
-    [
-        # Categorical
-        "type", # type of data: CBG, basal, bolus, etc
-        "time",
-
-        # Numerical
-        "value" # BG reading in mmol/L
-    ]
-]
-bg_map = {"cbg": 2}
-bgs = bgs.replace({"type": bg_map})
-bgs = bgs.loc[(bgs["type"] == 2)]
-bgs.dropna(inplace=True)
-bgs["time"] = pd.to_datetime(bgs["time"], infer_datetime_format=True)
 
 df = initial_df[
     [
@@ -58,27 +33,25 @@ df = initial_df[
         "duration", # temp basal length
         "percent", # percent of basal rate
         "rate", # absolute basal rate
+
+        # Fields from processing
+        "TDD",
+        "bgs_before",
+        "bgs_after",
+        "before_event_strings",
+        "after_event_strings",
+        "bgInput"
     ]
 ]
-basal_map = {"basal": 0}
 type_map = {"temp": 0}
 
-df = df.replace({"type": basal_map, "deliveryType": type_map})
+df = df.replace({"deliveryType": type_map})
 # Filter to get temp basals
 df = df.loc[(df["type"] == 0) & (df["deliveryType"] == 0)]
 # Drop if any values are NaN
 df = df.dropna()
-
-# Get the SAX strings
-df["before_event_strings"] = df["time"].apply(
-    annotate_with_sax, 
-    args=(sax_df, sax_interval, -bg_consideration_interval)
-)
-
-df["after_event_strings"] = df["time"].apply(
-    annotate_with_sax, 
-    args=(sax_df, sax_interval, bg_consideration_interval)
-)
+# Convert the time strings to pandas datetime format
+df["time"] = pd.to_datetime(df["time"], infer_datetime_format=True)
 
 # Print some summary statistics
 print("Head")
@@ -105,13 +78,10 @@ ax.set_xlabel("Duration")
 ax.set_ylabel("Percent")
 ax.set_zlabel("Rate")
 plt.title("KNN To Classify Temp Basals", fontsize=14)
-#plt.show()
+plt.show()
 
 # Select our abnormal rows
 abnormals = df.query('abnormal == 1')
-abnormals = abnormals.sort_values("time")
-abnormals["bgs_before"] = abnormals["time"].apply(find_bgs, args=(bgs, 120, 5))
-abnormals["bgs_after"] = abnormals["time"].apply(find_bgs, args=(bgs, 5, 120))
 
 # Export the data
 time = datetime.now().strftime("%H_%M_%S")
