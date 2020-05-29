@@ -54,7 +54,7 @@ df = initial_df[
 # Filter to get boluses
 df = df.loc[(df["type"] == 1),]
 # Drop if any values are NaN
-df.dropna(subset=["totalBolusAmount", "insulinCarbRatio", "insulinSensitivity"], inplace=True)
+df.dropna(subset=["totalBolusAmount", "insulinCarbRatio", "insulinSensitivity", "TDD"], inplace=True)
 # Convert the time strings to pandas datetime format
 df["time"] = pd.to_datetime(df["time"], infer_datetime_format=True)
 
@@ -67,9 +67,9 @@ print(df.describe().apply(lambda s: s.apply(lambda x: format(x, "f"))))
 
 # will want to play around with n_neighbors
 model = KNN()
-model.fit(df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity"]])
+model.fit(df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity", "TDD"]])
 
-predictions = model.predict(df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity"]])
+predictions = model.predict(df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity", "TDD"]])
 df["abnormal"] = predictions
 unique, counts = np.unique(predictions, return_counts=True)
 print ("Outliers:", counts[1], "\nTotal:", shape[0], "\n Percent:", round(counts[1]/shape[0] * 100), "%")
@@ -77,19 +77,19 @@ print ("Outliers:", counts[1], "\nTotal:", shape[0], "\n Percent:", round(counts
 # Plot the results
 fig = plt.figure(1, figsize=(7,7))
 ax = Axes3D(fig, rect=[0, 0, 0.95, 1], elev=48, azim=134)
-ax.scatter(df["totalBolusAmount"], df["carbInput"], df["insulinCarbRatio"],
+ax.scatter(df["totalBolusAmount"], df["carbInput"], df["TDD"],
         c=predictions, edgecolor="k", s=50)
 ax.set_xlabel("Bolus Amount")
 ax.set_ylabel("Carb Amount")
-ax.set_zlabel("CR")
+ax.set_zlabel("TDD")
 
 plt.title("KNN To Classify Boluses", fontsize=14)
-#plt.show()
+plt.show()
 
 # Select our abnormal rows
 abnormals = df.query('abnormal == 1')
 
 # Export the data
 time = datetime.now().strftime("%H_%M_%S")
-file_name = "abnormal_boluses_" + time
+file_name = "random_person_abnormal_boluses_" + time
 abnormals.to_csv(export_path + file_name + ".csv")
