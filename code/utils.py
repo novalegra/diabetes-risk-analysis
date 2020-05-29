@@ -19,7 +19,7 @@ def find_values(date, df, before_offset, after_offset, key):
         df.loc[
             (df["time"] > start) 
             & (df["time"] < end)
-        ].drop_duplicates(subset=key)[key]
+        ].drop_duplicates(subset="time")[key]
     )
     return relevent_rows
 
