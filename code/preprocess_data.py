@@ -74,7 +74,15 @@ doses["time"] = pd.to_datetime(doses["time"], infer_datetime_format=True)
 doses = doses.sort_values("time")
 
 # Get total amounts & TDD
-doses.fillna({"normal": 0, "extended": 0, "rate": 0, "carbInput": 0}, inplace=True)
+doses.fillna(
+    {"normal": 0, 
+    "extended": 0, 
+    "rate": 0, 
+    "carbInput": 0, 
+    "insulinCarbRatio": doses["insulinCarbRatio"].median(), 
+    "insulinSensitivity": doses["insulinSensitivity"].median()
+    }, inplace=True
+)
 doses["totalBolusAmount"] = doses["normal"] + doses["extended"]
 doses.fillna({"totalBolusAmount": 0}, inplace=True)
 doses["TDD"] = doses["time"].apply(find_TDD, args=(doses, 0))
