@@ -76,7 +76,9 @@ while True:
     print(df.iloc[file_index])
 
     # Plot the graph
-    plt.ylim(40, 300)
+    max_y = max(250, max(all_bg_values) + 10)
+    min_y = min(40, min(all_bg_values) - 10)
+    plt.ylim(min_y, max_y)
     plt.scatter(all_times, all_bg_values)
     # Plot the BG at the abnormal event as a star
     plt.scatter([0], [event_bg], marker="o", s=100)
@@ -86,7 +88,7 @@ while True:
             + ", carb-based residual = "
             + str(
                 round(
-                    df["totalAmount"].iloc[file_index] 
+                    df["totalBolusAmount"].iloc[file_index] 
                     - df["carbInput"].iloc[file_index] / df["insulinCarbRatio"].iloc[file_index], 2)
                 )
             )
