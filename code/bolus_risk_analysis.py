@@ -26,6 +26,8 @@ def find_abnormal_boluses(processed_df):
             "insulinOnBoard",
             "bgInput",
             "insulinSensitivity",
+            "duration_gaps_before",
+            "duration_gaps_after",
 
             # Fields from processing
             "totalBolusAmount",

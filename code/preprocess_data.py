@@ -3,7 +3,7 @@ import pandas as pd
 
 from pathlib import Path
 from datetime import datetime
-from utils import find_TDD, find_values, annotate_with_sax, return_first_matching_bg
+from utils import find_TDD, find_values, annotate_with_sax, return_first_matching_bg, find_duration_of_gap
 
 
 def preprocess_dose_data(initial_df, bgs, sax_df, sax_interval=10, bg_consideration_interval=180):
@@ -56,8 +56,10 @@ def preprocess_dose_data(initial_df, bgs, sax_df, sax_interval=10, bg_considerat
 
     # Get BGs before/after the event
     doses["bgs_before"] = doses["time"].apply(find_values, args=(bgs, bg_consideration_interval, 5, "value"))
+    doses["duration_gaps_before"] = doses["bgs_before"].apply(find_duration_of_gap)
     print("Got BGs before")
     doses["bgs_after"] = doses["time"].apply(find_values, args=(bgs, 5, bg_consideration_interval, "value"))
+    doses["duration_gaps_after"] = doses["bgs_after"].apply(find_duration_of_gap)
     print("Got BGs after")
 
     # Get BG input for boluses

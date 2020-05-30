@@ -114,14 +114,25 @@ def read_bgs_from_df(df):
             "value" # BG reading in mmol/L
         ]
     ]
-
+    # Filter out other dose types
     bg_map = {"cbg": 2}
     bgs = bgs.replace({"type": bg_map})
     bgs = bgs.loc[(bgs["type"] == 2)]
-    bgs.dropna(inplace=True)
+
+    # Get time
     bgs["time"] = pd.to_datetime(bgs["time"], infer_datetime_format=True)
+    standardized_times = bgs.groupby(pd.Grouper(key="time", freq="5min")).mean()
+
+    # Make time intervals standardized
+    bgs = bgs.set_index(["time"]).resample("5min").last().reset_index()
 
     # Take log of BG values
     bgs["log_bg"] = np.log10(bgs["value"])
+    # Fill in missing BG values
+    bgs["value"].fillna(-1, inplace=True)
 
     return bgs
+
+
+def find_duration_of_gap(bg_list, missing_data_key = -1, time_interval = 5, list_duration = 180):
+    return max(bg_list.count(missing_data_key) * 5 + (180 / 5 - len(bg_list)) * 5, 0)

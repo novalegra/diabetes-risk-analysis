@@ -17,7 +17,7 @@ bgs.to_csv(export_path + "bgs" + ".csv")
 print("Loaded BGs")
 
 sax_encodings = get_sax_encodings(bgs)
-sax_encodings.to_csv(export_path + "sax" + ".csv")
+sax_encodings.to_csv(export_path + "10_min_sax" + ".csv")
 print("Loaded SAX")
 
 processed_doses = preprocess_dose_data(initial_df, bgs, sax_encodings)

@@ -36,6 +36,8 @@ while True:
     NOTE: this makes the assumption that the 'before' and 'after' values 
     are continous, and that the interval between measurements is 5 minutes, 
     which may lead to faulty predictions in the event of missing CGM data
+    (solution: tag those missing values as a value < 40 so they don't appear on the graph,
+     but the spacing stays correct)
     '''
     before_event_values = [
         float(
@@ -53,10 +55,12 @@ while True:
             ) for i in df["bgs_after"].iloc[file_index].split(",")
         ] if len(df["bgs_after"].iloc[file_index]) > 2 else []
 
-    event_bg = (
-        df["bgInput"].iloc[file_index] if is_bolus_data and not isnan(df["bgInput"].iloc[file_index])
-        else (before_event_values[-1] + after_event_values[0]) / 2
-    )
+    if is_bolus_data and not isnan(df["bgInput"].iloc[file_index]):
+        event_bg = df["bgInput"].iloc[file_index]
+    elif len(before_event_values) > 0 and len(after_event_values) > 0:
+        event_bg = (before_event_values[-1] + after_event_values[0]) / 2
+    else:
+        event_bg = 0
 
     relative_before_times = [5 * i for i in range(-1 + -len(before_event_values), -1)]
     relative_after_times = [5 * i for i in range(1, len(after_event_values) + 1)]
@@ -77,7 +81,7 @@ while True:
 
     # Plot the graph
     max_y = max(250, max(all_bg_values) + 10)
-    min_y = min(40, min(all_bg_values) - 10)
+    min_y = 30
     plt.ylim(min_y, max_y)
     plt.scatter(all_times, all_bg_values)
     # Plot the BG at the abnormal event as a star
@@ -94,7 +98,9 @@ while True:
             )
     else:
         plt.title("Row " + str(file_index + 2))
-    plt.savefig(export_path + "bg_graph_for_row_" + str(file_index + 2) + ".png")
+    plt.xlabel("Minutes since dose event")
+    plt.ylabel("BG (mg/dL)")
+
     plt.show()
 
     try:
