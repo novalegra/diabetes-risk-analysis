@@ -17,3 +17,5 @@ code/testing_regression.py
 *.xlsx
 
 simglucose
+
+code/data/
