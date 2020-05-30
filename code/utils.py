@@ -99,3 +99,29 @@ def find_TDD(date, df, dummy_val):
 
 def get_column_TDDs(df):
     return df["time"].apply(find_TDD, args=(df))
+
+"""
+    Take a dataframe with a variety of data and extract the BG values
+"""
+def read_bgs_from_df(df):
+    bgs = df[
+        [
+            # Categorical
+            "type", # type of data: CBG, basal, bolus, etc
+            "time",
+
+            # Numerical
+            "value" # BG reading in mmol/L
+        ]
+    ]
+
+    bg_map = {"cbg": 2}
+    bgs = bgs.replace({"type": bg_map})
+    bgs = bgs.loc[(bgs["type"] == 2)]
+    bgs.dropna(inplace=True)
+    bgs["time"] = pd.to_datetime(bgs["time"], infer_datetime_format=True)
+
+    # Take log of BG values
+    bgs["log_bg"] = np.log10(bgs["value"])
+
+    return bgs
