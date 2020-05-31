@@ -13,3 +13,4 @@ dependencies:
   - pip
   - pip:
     - pyod==0.7.9
+    - d6tflow==0.1.9
