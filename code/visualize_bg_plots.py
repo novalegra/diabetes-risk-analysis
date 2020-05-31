@@ -9,11 +9,6 @@ path = None
 while path == None or not exists(path):
     path = input("Path to input file: ")
 
-try:
-    export_path = input("Output file path (default: current folder): ")
-except:
-    export_path = ""
-
 is_bolus_data = "bolus" in path
 
 # Load the data in
