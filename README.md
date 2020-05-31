@@ -17,7 +17,7 @@ Run `deactivate` to stop the environment.
 
 ## Using the Tools
 
-# Using the graphing tools
+### Using the graphing tools
 The file `visualize_bg_plots.py` can take csv files that have been run through the dose pre-processing script (`preprocess_data.py`) and visualize the BG values surrounding the event. Upon running, you will be prompted for the *absolute* path to the csv file (example Mac path: `/Users/annaquinlan/Desktop/Projects/diabetes-risk-analysis/results/processed_doses.csv`), and the row number you'd like to be visualized. The indexing for the row number is how Excel and similar programs index the csv - with the header being index 1, and the first 'actual' line of data values being at index 2. Once you enter the line number, a graph will pop up with the results; close that graph to be prompted for a new line number. Enter any non-valid line number to quit the program.
 
 ## Information on Data Fields
