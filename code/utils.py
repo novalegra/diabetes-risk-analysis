@@ -1,15 +1,16 @@
 import numpy as np
 import pandas as pd
 
+
 """ 
 Get all of the values within the time interval
 
-date - Pandas datetime w/date of event
-df - dataframe with the data, must contain "time" column with Pandas datetimes and whatever the 'key' column is
-before_offset - offset to search before the event date, in minutes
-after_offset - offset to search after the event date, in minutes
+date: Pandas datetime w/date of event
+df: dataframe with the data, must contain "time" column with Pandas datetimes and whatever the 'key' column is
+before_offset: offset to search before the event date, in minutes
+after_offset: offset to search after the event date, in minutes
 
-Returns a list of the values
+Returns: a list of the values
 """
 def find_values(date, df, before_offset, after_offset, key):
     start = date - pd.Timedelta(minutes = before_offset)
@@ -26,13 +27,13 @@ def find_values(date, df, before_offset, after_offset, key):
 """ 
 Get the first matching BG within the time interval
 
-date - Pandas datetime w/date of event
-df - dataframe with the bolus dosing data, must contain "bgInput" column
-bgs - dataframe with the BG data, must contain "time" column with Pandas datetimes
-before_offset - offset to search before the event date, in minutes
-after_offset - offset to search after the event date, in minutes
+date: Pandas datetime w/date of event
+df: dataframe with the bolus dosing data, must contain "bgInput" column
+bgs: dataframe with the BG data, must contain "time" column with Pandas datetimes
+before_offset: offset to search before the event date, in minutes
+after_offset: offset to search after the event date, in minutes
 
-Returns the first matching BG, if it can be found, and otherwise the average bgInput
+Returns: the first matching BG, if it can be found, and otherwise the average bgInput
 """
 def return_first_matching_bg(date, df, bgs, before_offset, after_offset):
     result = find_values(date, bgs, before_offset, after_offset, "value")
@@ -43,11 +44,11 @@ def return_first_matching_bg(date, df, bgs, before_offset, after_offset):
 """
 Get the SAX representation of a time series from a df with the SAX encodings
 
-date - Pandas datetime w/date of event
-sax_df - dataframe containing SAX representations for the BG time series
-sax_interval_length - length of time of the SAX interval in minutes
-time_length_of_string - desired length of the string,
-                        can be negative to get values from before the event
+date: Pandas datetime w/date of event
+sax_df: dataframe containing SAX representations for the BG time series
+sax_interval_length: length of time of the SAX interval in minutes
+time_length_of_string: desired length of the string,
+                       can be negative to get values from before the event
 
 returns the SAX string
 """
@@ -83,7 +84,13 @@ def annotate_with_sax(date, sax_df, sax_interval_length, time_length_of_string):
     return string
 
 """
-df - dataframe containing dosing data
+    Finds the total daily dose (TDD) of insulin for a given day.
+    
+    date: date to compute the TDD on
+    df: dataframe containing dosing data, which must have "totalBolusAmount" and "rate" columns
+    dummy_val: included so Pandas stops erroring when calling this function...
+
+    Returns: total insulin given over a 24 hour period
 
 TODO: this could be more efficent if we used numpy arrays? also we're computing the TDD too many times
 """
@@ -101,9 +108,20 @@ def get_column_TDDs(df):
     return df["time"].apply(find_TDD, args=(df))
 
 """
-    Take a dataframe with a variety of data and extract the BG values
+    Take a dataframe with a variety of data and extract the BG values.
+    
+    df - dataframe with initial data
+       - required columns: 
+            - "type" (where BG values are 'cbg')
+            - "time" (string of the date/time)
+            - "value" (the BG value, likely in mmol/L)
+    bg_timedelta - minutes between each BG value
+    
+    Returns: df with "type", "time", "value", and "logBG" columns,
+      where the time column has a consistant interval of bg_timedelta
+      minutes, all missing BG values are filled with -1
 """
-def read_bgs_from_df(df):
+def read_bgs_from_df(df, bg_timedelta=5):
     bgs = df[
         [
             # Categorical
@@ -121,9 +139,10 @@ def read_bgs_from_df(df):
 
     # Get time
     bgs["time"] = pd.to_datetime(bgs["time"], infer_datetime_format=True)
-    standardized_times = bgs.groupby(pd.Grouper(key="time", freq="5min")).mean()
 
     # Make time intervals standardized
+    interval_string = str(bg_timedelta) + "min"
+    standardized_times = bgs.groupby(pd.Grouper(key="time", freq=interval_string)).mean()
     bgs = bgs.set_index(["time"]).resample("5min").last().reset_index()
 
     # Take log of BG values
@@ -133,6 +152,15 @@ def read_bgs_from_df(df):
 
     return bgs
 
+"""
+    Finds the number of minutes of missing BG data over a given interval
 
-def find_duration_of_gap(bg_list, missing_data_key = -1, time_interval = 5, list_duration = 180):
+    bg_list: list of BG values
+    missing_data_key: the value given to missing values
+    time_interval: minutes between each BG value
+    list_duration: expected number of minutes of data in each list
+
+    Returns: number of minutes where no BG data is present
+"""
+def find_duration_of_gap(bg_list, missing_data_key=-1, time_interval=5, list_duration=180):
     return max(bg_list.count(missing_data_key) * 5 + (180 / 5 - len(bg_list)) * 5, 0)
