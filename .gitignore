@@ -4,8 +4,6 @@ results/
 
 .DS_Store
 
-*.png
-
 *.csv
 
 *.pyc
