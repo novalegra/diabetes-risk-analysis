@@ -16,9 +16,50 @@ run `conda activate risk-analysis` to start the environment.
 Run `deactivate` to stop the environment.
 
 ## Using the Tools
+### Identifying abnormal doses
+Run `optimized_analysis_pipeline.py` to process an export of Tidepool data and identify the outliers in the data. Currently, this export must include CGM data and insulin dosing data. More specifically, the following columns should be present in the data:
+
+#### Columns:
+"type" (type of data: CBG, basal, bolus, etc)
+
+"time" (time of the event)
+
+"subType" (subtype of bolus: normal, extended, dual wave)
+
+"deliveryType" (type of basal: scheduled (according to programmed basal schedule) vs temp)
+
+"normal" (units of insulin delivered via a "normal" bolus)
+
+"extended" (units of insulin delivered via an extended bolus)
+
+"rate" (absolute basal rate)
+
+"insulinCarbRatio" (insulin to carb ratio)
+
+"carbInput" (number of carbs input into bolus calculator)
+
+"insulinOnBoard" (insulin on board)
+
+"bgInput" (input BG into the dose calculator)
+
+"insulinSensitivity" (insulin to BG ratio)
+
+"duration" (temp basal length)
+
+"percent" (percent of basal rate)
+
+"value" (CGM reading in mmol/L)
+
+Not all of these fields are filled for every dosing type. For example, boluses can have information in "type", "time", "normal", "subType", "normal", "extended", "insulinCarbRatio", "carbInput", "insulinOnBoard", "bgInput", and "insulinSensitivity".
+
+To input the path to the file, edit the `path` variable in `optimized_analysis_pipeline.py`. You should include the absolute path to the csv file (for example on Mac, `/Users/juliesmith/Downloads/diabetes-risk-analysis/raw_data.csv`). The program will check that this path is correct before importing the file. At the bottom of `optimized_analysis_pipeline.py`, you can uncomment certain lines of code to mark that parts (or all) of the analysis should be re-run. By default, d6tflow will not re-run operations that have already been performed; for example, if the dose-processing task had already been run (and generated an output), you would need to uncomment `TaskPreprocessData().invalidate()` if you wanted to allow the processing to be re-run. This will also mean that all processes that rely on `TaskPreprocessData` would be re-run if called.
+
+Note that you must also `run` the task in order for it to execute; if we wanted to run (or re-run) the abnormal bolus classifier, we'd uncomment `d6tflow.run(TaskGetAbnormalBoluses())`. Running the whole pileline on a file with ~63,000 entries takes roughly 40-50 seconds.
+
+Outputs for the tasks are saved to individual folders (per task) within a `results` folder. If we wanted to find the abnormal bolus csv file, that would be contained in `results/TaskGetAbnormalBoluses`.
 
 ### Using the graphing tools
-The file `visualize_bg_plots.py` can take csv files that have been run through the dose pre-processing script (`preprocess_data.py`) and visualize the BG values surrounding the event. Upon running, you will be prompted for the *absolute* path to the csv file (example Mac path: `/Users/annaquinlan/Desktop/Projects/diabetes-risk-analysis/results/processed_doses.csv`), and the row number you'd like to be visualized. The indexing for the row number is how Excel and similar programs index the csv - with the header being index 1, and the first 'actual' line of data values being at index 2. Once you enter the line number, a graph will pop up with the results; close that graph to be prompted for a new line number. Enter any non-valid line number to quit the program.
+The file `visualize_bg_plots.py` can take csv files that have been run through the dose pre-processing script (`preprocess_data.py`) and visualize the BG values surrounding the event. Upon running, you will be prompted for the *absolute* path to the csv file (example Mac path: `/Users/juliesmith/Downloads/diabetes-risk-analysis/results/processed_doses.csv`), and the row number you'd like to be visualized. The indexing for the row number is how Excel and similar programs index the csv - with the header being index 1, and the first 'actual' line of data values being at index 2. Once you enter the line number, a graph will pop up with the results; close that graph to be prompted for a new line number. Enter any non-valid line number to quit the program.
 
 ## Information on Data Fields
 Not all of the fields below are present for every type of data (ex: basals have a duration, boluses have an associated carb entry)
