@@ -2,6 +2,7 @@ import d6tflow
 import pandas as pd
 
 from pathlib import Path
+from os.path import exists
 
 from utils import read_bgs_from_df
 from bg_sax_analysis import get_sax_encodings
@@ -20,8 +21,9 @@ Task Flow:
 
 # Save output to a results folder
 d6tflow.set_dir("../results")
-# Path to the input file
+# Path to the input file - YOU MUST FILL THIS IN
 path = str(Path(__file__).parent.parent) + "/data/risk-data-sample.csv"
+assert(exists(path))
 
 
 ''' Load the data at "path" into a Pandas dataframe '''

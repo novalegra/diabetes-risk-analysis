@@ -91,17 +91,20 @@ def annotate_with_sax(date, sax_df, sax_interval_length, time_length_of_string):
     dummy_val: included so Pandas stops erroring when calling this function...
 
     Returns: total insulin given over a 24 hour period
-
-TODO: this could be more efficent if we used numpy arrays? also we're computing the TDD too many times
 """
-def find_TDD(date, df, dummy_val):
+def find_TDD(date, df, tdd_dict):
     midnight = pd.DatetimeIndex([date]).normalize()[0]
+    if midnight in tdd_dict:
+        return tdd_dict[midnight]
+    
     mins_in_day = 24 * 60
 
     boluses = find_values(midnight, df, 0, mins_in_day + 1, "totalBolusAmount")
     basals = find_values(midnight, df, 0, mins_in_day + 1, "rate")
+    tdd = sum(boluses) + sum(basals)
+    tdd_dict[midnight] = tdd
 
-    return sum(boluses) + sum(basals)
+    return tdd
 
 
 def get_column_TDDs(df):

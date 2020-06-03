@@ -51,7 +51,9 @@ def preprocess_dose_data(initial_df, bgs, sax_df, sax_interval=10, bg_considerat
     doses["totalBolusAmount"] = doses["normal"] + doses["extended"]
     doses.fillna({"totalBolusAmount": 0}, inplace=True)
     print("Filled in preprocessing fields with map")
-    doses["TDD"] = doses["time"].apply(find_TDD, args=(doses, 0))
+
+    tdd_dict = {}
+    doses["TDD"] = doses["time"].apply(find_TDD, args=(doses, tdd_dict))
     print("Got TDD")
 
     # Get BGs before/after the event
