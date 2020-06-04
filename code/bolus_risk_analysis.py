@@ -5,11 +5,13 @@ import pandas as pd
 import matplotlib.pylab as plt
 
 from pyod.models.knn import KNN
+from sklearn.ensemble import IsolationForest
 from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime, timedelta
 
-def find_abnormal_boluses(processed_df):
+
+def find_abnormal_boluses(processed_df, model_type="knn"):
     # Create a df with the data relevent to boluses
     df = processed_df[
         [
@@ -55,15 +57,22 @@ def find_abnormal_boluses(processed_df):
     print(df.describe().apply(lambda s: s.apply(lambda x: format(x, "f"))))
 
     # will want to play around with n_neighbors
-    model = KNN()
+    if model_type == "isolation_forest":
+        # Set a random state for reproducable results
+        rng = np.random.RandomState(42)
+        model = IsolationForest(random_state=rng, contamination=0.01)
+    else:
+        model = KNN()
+
     model.fit(df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity", "TDD"]])
 
     predictions = model.predict(df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity", "TDD"]])
     df["abnormal"] = predictions
     unique, counts = np.unique(predictions, return_counts=True)
-    print ("Outliers:", counts[1], "\nTotal:", shape[0], "\n Percent:", round(counts[1]/shape[0] * 100), "%")
 
-    '''# Plot the results
+    
+    # Plot the results
+    '''
     fig = plt.figure(1, figsize=(7,7))
     ax = Axes3D(fig, rect=[0, 0, 0.95, 1], elev=48, azim=134)
     ax.scatter(df["totalBolusAmount"], df["carbInput"], df["TDD"],
@@ -73,8 +82,17 @@ def find_abnormal_boluses(processed_df):
     ax.set_zlabel("TDD")
 
     plt.title("KNN To Classify Boluses", fontsize=14)
-    plt.show()'''
+    plt.show()
+    '''
 
     # Select our abnormal rows
-    abnormals = df.query('abnormal == 1')
+    if model_type == "isolation_forest":
+        # Isolation forest: 1 is normal, -1 is abnormal
+         print ("Outliers:", counts[0], "\nTotal:", shape[0], "\nPercent:", round(counts[0]/shape[0] * 100), "%")
+         abnormals = df.query('abnormal == -1')
+    else:
+        # KNN: 0 is normal, 1 is abnormal
+        print ("Outliers:", counts[1], "\nTotal:", shape[0], "\nPercent:", round(counts[1]/shape[0] * 100), "%")
+        abnormals = df.query('abnormal == 1')
+
     return abnormals

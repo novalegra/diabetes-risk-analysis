@@ -33,7 +33,7 @@ bgs["log_bg"] = np.log10(bgs["value"])
 bgs["derivative"] = savgol_filter(bgs["log_bg"], 15, 13, deriv=1)
 
 m = 20
-mp = stumpy.stump(bgs["derivative"], m)
+mp = stumpy.stump(bgs["log_bg"], m)
 
 fig, axs = plt.subplots(3, sharex=True, gridspec_kw={'hspace': 0})
 plt.suptitle('Motif (Pattern) Discovery', fontsize='30')

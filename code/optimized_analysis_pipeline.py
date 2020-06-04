@@ -166,7 +166,7 @@ class TaskGetAbnormalBasals(d6tflow.tasks.TaskCSVPandas):
 
 ''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
 # d6tflow.run(TaskGetAbnormalBoluses(), forced=TaskGetAbnormalBoluses())
-''' Uncomment line below to find the abnormal boluses using an Isolation Forest'''
+''' Uncomment line below to find the abnormal boluses using an Isolation Forest model '''
 # d6tflow.run(TaskGetAbnormalBoluses(model_type="isolation_forest"), forced=TaskGetAbnormalBoluses())
 ''' Uncomment line below to find the abnormal basals '''
 # d6tflow.run(TaskGetAbnormalBasals())
