@@ -57,7 +57,8 @@ def find_abnormal_temp_basals(processed_df):
     unique, counts = np.unique(predictions, return_counts=True)
     print ("Outliers:", counts[1], "\nTotal:", shape[0], "\n Percent:", round(counts[1]/shape[0] * 100), "%")
 
-    '''# Plot results
+    '''
+    # Plot results
     fig = plt.figure(1, figsize=(7,7))
     ax = Axes3D(fig, rect=[0, 0, 0.95, 1], elev=48, azim=134)
     ax.scatter(df["duration"], df["percent"], df["rate"],
@@ -66,7 +67,8 @@ def find_abnormal_temp_basals(processed_df):
     ax.set_ylabel("Percent")
     ax.set_zlabel("Rate")
     plt.title("KNN To Classify Temp Basals", fontsize=14)
-    plt.show()'''
+    plt.show()
+    '''
 
     # Select our abnormal rows
     abnormals = df.query('abnormal == 1')
