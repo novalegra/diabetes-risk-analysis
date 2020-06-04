@@ -7,14 +7,14 @@ Get all of the values within the time interval
 
 date: Pandas datetime w/date of event
 df: dataframe with the data, must contain "time" column with Pandas datetimes and whatever the 'key' column is
-before_offset: offset to search before the event date, in minutes
-after_offset: offset to search after the event date, in minutes
+first_offset: offset to apply to the beginning of the range, in minutes (can be negative)
+second_offset: offset to apply to the end of the range, in minutes (can be negative)
 
 Returns: a list of the values
 """
-def find_values(date, df, before_offset, after_offset, key):
-    start = date - pd.Timedelta(minutes = before_offset)
-    end = date + pd.Timedelta(minutes = after_offset)
+def find_values(date, df, first_offset, second_offset, key):
+    start = date + pd.Timedelta(minutes = first_offset)
+    end = date + pd.Timedelta(minutes = second_offset)
 
     relevent_rows = list(
         df.loc[
@@ -30,13 +30,13 @@ Get the first matching BG within the time interval
 date: Pandas datetime w/date of event
 df: dataframe with the bolus dosing data, must contain "bgInput" column
 bgs: dataframe with the BG data, must contain "time" column with Pandas datetimes
-before_offset: offset to search before the event date, in minutes
-after_offset: offset to search after the event date, in minutes
+first_offset: offset to apply to the beginning of the range, in minutes (can be negative)
+second_offset: offset to apply to the end of the range, in minutes (can be negative)
 
 Returns: the first matching BG, if it can be found, and otherwise the average bgInput
 """
-def return_first_matching_bg(date, df, bgs, before_offset, after_offset):
-    result = find_values(date, bgs, before_offset, after_offset, "value")
+def return_first_matching_bg(date, df, bgs, first_offset, second_offset):
+    result = find_values(date, bgs, first_offset, second_offset, "value")
 
     return result[0] if len(result) > 0 else df["bgInput"].mean()
 

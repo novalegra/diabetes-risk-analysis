@@ -8,6 +8,8 @@ from os.path import exists
 path = None
 while path == None or not exists(path):
     path = input("Path to input file: ")
+    if not exists(path):
+        print("Path does not exist in computer, try again.")
 
 is_bolus_data = "bolus" in path
 
@@ -81,18 +83,7 @@ while True:
     plt.scatter(all_times, all_bg_values)
     # Plot the BG at the abnormal event as a star
     plt.scatter([0], [event_bg], marker="o", s=100)
-    if is_bolus_data:
-        plt.title(
-            "Row " + str(file_index + 2) 
-            + ", carb-based residual = "
-            + str(
-                round(
-                    df["totalBolusAmount"].iloc[file_index] 
-                    - df["carbInput"].iloc[file_index] / df["insulinCarbRatio"].iloc[file_index], 2)
-                )
-            )
-    else:
-        plt.title("Row " + str(file_index + 2))
+    plt.title("Dose at Row " + str(file_index + 2))
     plt.xlabel("Minutes since dose event")
     plt.ylabel("BG (mg/dL)")
 
