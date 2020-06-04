@@ -166,4 +166,4 @@ def read_bgs_from_df(df, bg_timedelta=5):
     Returns: number of minutes where no BG data is present
 """
 def find_duration_of_gap(bg_list, missing_data_key=-1, time_interval=5, list_duration=180):
-    return max(bg_list.count(missing_data_key) * 5 + (180 / 5 - len(bg_list)) * 5, 0)
+    return bg_list.count(missing_data_key) * 5 + max(0, (180 / 5 - len(bg_list)) * 5)
