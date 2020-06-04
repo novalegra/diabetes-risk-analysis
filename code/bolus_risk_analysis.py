@@ -72,6 +72,8 @@ def find_abnormal_boluses(processed_df, model_type="knn"):
 
     
     # Plot the results
+    # Note that this plot only incorporates 3 dimensions of the data, so there are other 
+    # factors present that might explain why certain values were/were not classified as outliers
     '''
     fig = plt.figure(1, figsize=(7,7))
     ax = Axes3D(fig, rect=[0, 0, 0.95, 1], elev=48, azim=134)
@@ -81,7 +83,7 @@ def find_abnormal_boluses(processed_df, model_type="knn"):
     ax.set_ylabel("Carb Amount")
     ax.set_zlabel("TDD")
 
-    plt.title("KNN To Classify Boluses", fontsize=14)
+    plt.title("IF To Classify Boluses" if model_type == "isolation_forest" else "KNN To Classify Boluses", fontsize=14)
     plt.show()
     '''
 
