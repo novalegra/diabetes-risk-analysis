@@ -11,8 +11,6 @@ while path == None or not exists(path):
     if not exists(path):
         print("Path does not exist in computer, try again.")
 
-is_bolus_data = "bolus" in path
-
 # Load the data in
 df = pd.read_csv(path)
 
@@ -52,9 +50,9 @@ while True:
             ) for i in df["bgs_after"].iloc[file_index].split(",")
         ] if len(df["bgs_after"].iloc[file_index]) > 2 else []
 
-    if is_bolus_data and not isnan(df["bgInput"].iloc[file_index]):
+    if not isnan(df["bgInput"].iloc[file_index]):
         event_bg = df["bgInput"].iloc[file_index]
-    elif len(before_event_values) > 0 and len(after_event_values) > 0:
+    elif len(before_event_values) > 0 and len(after_event_values) > 0 and before_event_values[-1] != -1 and after_event_values[0] != -1:
         event_bg = (before_event_values[-1] + after_event_values[0]) / 2
     else:
         event_bg = 0
