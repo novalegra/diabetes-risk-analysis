@@ -158,11 +158,16 @@ class TaskGetAbnormalBasals(d6tflow.tasks.TaskCSVPandas):
 
 ''' Uncomment line below to mark that all tasks should be re-run '''
 # TaskGetInitialData().invalidate(confirm=False)
+''' Uncomment line below to mark that tasks related to BGs should be re-run '''
+# TaskGetBGData().invalidate(confirm=False)
 ''' Uncomment line below to mark that tasks for the preprocessing should be re-run '''
 # TaskPreprocessData().invalidate(confirm=False)
-''' Uncomment lines below to mark that tasks to identify abnormal boluses &/or basals should be re-run '''
-TaskGetAbnormalBoluses().invalidate(confirm=False)
+''' Uncomment lines below to mark that tasks to identify abnormal boluses &/or basals with a KNN model should be re-run '''
+# TaskGetAbnormalBoluses().invalidate(confirm=False)
 # TaskGetAbnormalBasals().invalidate(confirm=False)
+''' Uncomment lines below to mark that tasks to identify abnormal boluses with an Isolation Forest model should be re-run '''
+# TaskGetAbnormalBoluses(model_type="isolation_forest").invalidate(confirm=False)
+
 
 ''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
 # d6tflow.run(TaskGetAbnormalBoluses())
