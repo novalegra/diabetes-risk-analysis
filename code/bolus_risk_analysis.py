@@ -38,14 +38,23 @@ def find_abnormal_boluses(processed_df, model_type="knn"):
             "bgs_after",
             "before_event_strings",
             "after_event_strings",
-            "bgInput"
+            "bgInput",
+            "bg_30_min_before", 
+            "bg_75_min_after"
         ]
     ]
 
     # Filter to get boluses
     df = df.loc[(df["type"] == 1),]
     # Drop if any values are NaN
-    df.dropna(subset=["totalBolusAmount", "insulinCarbRatio", "insulinSensitivity", "TDD"], inplace=True)
+    df.dropna(subset=[
+        "totalBolusAmount", 
+        "insulinCarbRatio", 
+        "insulinSensitivity", 
+        "TDD", 
+        "bg_30_min_before", 
+        "bg_75_min_after"
+    ], inplace=True)
     # Convert the time strings to pandas datetime format
     df["time"] = pd.to_datetime(df["time"], infer_datetime_format=True)
 
@@ -60,11 +69,22 @@ def find_abnormal_boluses(processed_df, model_type="knn"):
     if model_type == "isolation_forest":
         # Set a random state for reproducable results
         rng = np.random.RandomState(42)
-        model = IsolationForest(random_state=rng, contamination=0.02)
+        model = IsolationForest(random_state=rng, contamination=0.05)
     else:
         model = KNN()
 
-    data_to_predict = df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity", "TDD"]]
+    data_to_predict = df[
+        [
+            "totalBolusAmount", 
+            "carbInput", 
+            "insulinCarbRatio", 
+            "bgInput", 
+            "insulinSensitivity", 
+            "TDD",
+            "bg_30_min_before", 
+            "bg_75_min_after"
+        ]
+    ]
     model.fit(data_to_predict)
 
     predictions = model.predict(data_to_predict)

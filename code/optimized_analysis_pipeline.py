@@ -98,7 +98,7 @@ class TaskPreprocessData(d6tflow.tasks.TaskCSVPandas):
         self.save(processed_doses)
 
 
-class TaskPreprocessBGsForVisualization(d6tflow.tasks.TaskCSVPandas):
+class TaskPreprocessBGs(d6tflow.tasks.TaskCSVPandas):
     def requires(self):
         return {
             "raw_df": TaskGetInitialData(), 
@@ -125,7 +125,7 @@ class TaskGetAbnormalBoluses(d6tflow.tasks.TaskCSVPandas):
     def requires(self):
         return {
             "preprocessed_doses": TaskPreprocessData(),
-            "bg_annotated_doses": TaskPreprocessBGsForVisualization()
+            "bg_annotated_doses": TaskPreprocessBGs()
         }
     
     def run(self):
@@ -137,6 +137,8 @@ class TaskGetAbnormalBoluses(d6tflow.tasks.TaskCSVPandas):
         doses["bgs_after"] = bgs["bgs_after"]
         doses["duration_gaps_before"] = bgs["duration_gaps_before"]
         doses["duration_gaps_after"] = bgs["duration_gaps_after"]
+        doses["bg_30_min_before"] = bgs["bg_30_min_before"]
+        doses["bg_75_min_after"] = bgs["bg_75_min_after"]
 
         abnormal_boluses = find_abnormal_boluses(doses, self.model_type)
         self.save(abnormal_boluses)
@@ -162,6 +164,7 @@ class TaskGetAbnormalBasals(d6tflow.tasks.TaskCSVPandas):
 # TaskGetBGData().invalidate(confirm=False)
 ''' Uncomment line below to mark that tasks for the preprocessing should be re-run '''
 # TaskPreprocessData().invalidate(confirm=False)
+# TaskPreprocessBGs().invalidate(confirm=False)
 ''' Uncomment lines below to mark that tasks to identify abnormal boluses &/or basals with a KNN model should be re-run '''
 # TaskGetAbnormalBoluses().invalidate(confirm=False)
 # TaskGetAbnormalBasals().invalidate(confirm=False)

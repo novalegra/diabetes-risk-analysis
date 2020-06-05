@@ -57,11 +57,14 @@ def find_bgs_before_and_after(initial_df, bgs, bg_consideration_interval=180):
     # Get BGs before the event
     doses["bgs_before"] = doses["time"].apply(find_values, args=(bgs, -bg_consideration_interval, 5, "value"))
     doses["duration_gaps_before"] = doses["bgs_before"].apply(find_duration_of_gap)
+    doses["bg_30_min_before"] = doses["time"].apply(return_first_matching_bg, args=(doses, bgs, -31, -24))
     print("Got BGs before")
 
     # Get BGs after the event
     doses["bgs_after"] = doses["time"].apply(find_values, args=(bgs, -5, bg_consideration_interval, "value"))
     doses["duration_gaps_after"] = doses["bgs_after"].apply(find_duration_of_gap)
+    # 75 mins because of insulin peak
+    doses["bg_75_min_after"] = doses["time"].apply(return_first_matching_bg, args=(doses, bgs, 74, 79))
     print("Got BGs after")
 
     return doses
