@@ -158,26 +158,27 @@ class TaskGetAbnormalBasals(d6tflow.tasks.TaskCSVPandas):
         abnormal_basals = find_abnormal_temp_basals(doses)
         self.save(abnormal_basals)
 
-''' Uncomment line below to mark that all tasks should be re-run '''
-# TaskGetInitialData().invalidate(confirm=False)
-''' Uncomment line below to mark that tasks related to BGs should be re-run '''
-# TaskGetBGData().invalidate(confirm=False)
-''' Uncomment line below to mark that tasks for the preprocessing should be re-run '''
-# TaskPreprocessData().invalidate(confirm=False)
-# TaskPreprocessBGs().invalidate(confirm=False)
-''' Uncomment lines below to mark that tasks to identify abnormal boluses &/or basals with a KNN model should be re-run '''
-# TaskGetAbnormalBoluses().invalidate(confirm=False)
-# TaskGetAbnormalBasals().invalidate(confirm=False)
-''' Uncomment lines below to mark that tasks to identify abnormal boluses with an Isolation Forest model should be re-run '''
-# TaskGetAbnormalBoluses(model_type="isolation_forest").invalidate(confirm=False)
 
+if __name__ == '__main__':
+    ''' Uncomment line below to mark that all tasks should be re-run '''
+    # TaskGetInitialData().invalidate(confirm=False)
+    ''' Uncomment line below to mark that tasks related to BGs should be re-run '''
+    # TaskGetBGData().invalidate(confirm=False)
+    ''' Uncomment line below to mark that tasks for the preprocessing should be re-run '''
+    # TaskPreprocessData().invalidate(confirm=False)
+    # TaskPreprocessBGs().invalidate(confirm=False)
+    ''' Uncomment lines below to mark that tasks to identify abnormal boluses &/or basals with a KNN model should be re-run '''
+    # TaskGetAbnormalBoluses(model_type="knn").invalidate(confirm=False)
+    # TaskGetAbnormalBasals().invalidate(confirm=False)
+    ''' Uncomment lines below to mark that tasks to identify abnormal boluses with an Isolation Forest model should be re-run '''
+    # TaskGetAbnormalBoluses(model_type="isolation_forest").invalidate(confirm=False)
 
-''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
-# d6tflow.run(TaskGetAbnormalBoluses())
-''' Uncomment line below to find the abnormal boluses using an Isolation Forest model '''
-# d6tflow.run(TaskGetAbnormalBoluses(model_type="isolation_forest"))
-''' Uncomment line below to find the abnormal basals '''
-# d6tflow.run(TaskGetAbnormalBasals())
-''' Uncomment line below to process the dose data '''
-# d6tflow.run(TaskPreprocessData())
+    ''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
+    # d6tflow.run(TaskGetAbnormalBoluses(model_type="knn"), workers=2)
+    ''' Uncomment line below to find the abnormal boluses using an Isolation Forest model '''
+    # d6tflow.run(TaskGetAbnormalBoluses(model_type="isolation_forest"), workers=2)
+    ''' Uncomment line below to find the abnormal basals '''
+    # d6tflow.run(TaskGetAbnormalBasals(), workers=2)
+    ''' Uncomment line below to process the dose data '''
+    # d6tflow.run(TaskPreprocessData(), workers=2)
 
