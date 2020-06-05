@@ -60,16 +60,18 @@ def find_abnormal_boluses(processed_df, model_type="knn"):
     if model_type == "isolation_forest":
         # Set a random state for reproducable results
         rng = np.random.RandomState(42)
-        model = IsolationForest(random_state=rng, contamination=0.01)
+        model = IsolationForest(random_state=rng, contamination=0.02)
     else:
         model = KNN()
 
-    model.fit(df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity", "TDD"]])
+    data_to_predict = df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity", "TDD"]]
+    model.fit(data_to_predict)
 
-    predictions = model.predict(df[["totalBolusAmount", "carbInput", "insulinCarbRatio", "bgInput", "insulinSensitivity", "TDD"]])
+    predictions = model.predict(data_to_predict)
     df["abnormal"] = predictions
+    if model_type == "isolation_forest":
+        df["abnormality_score"] = model.decision_function(data_to_predict)
     unique, counts = np.unique(predictions, return_counts=True)
-
     
     # Plot the results
     # Note that this plot only incorporates 3 dimensions of the data, so there are other 
