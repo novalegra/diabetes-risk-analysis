@@ -55,11 +55,17 @@ Not all of these fields are filled for every dosing type. For example, boluses c
 #### Configuring the Run
 This code is designed to be used with python3, and the Anaconda environment is configured appropriately. To input the path to the file, edit the `path` variable in `optimized_analysis_pipeline.py`. You should include the absolute path to the csv file (for example on Mac, `/Users/juliesmith/Downloads/diabetes-risk-analysis/raw_data.csv`). The program will check that this path is correct before importing the file. 
 
-At the bottom of `optimized_analysis_pipeline.py`, you can uncomment certain lines of code to mark that parts (or all) of the analysis should be re-run. By default, d6tflow will not re-run operations that have already been performed; for example, if the dose-processing task had already been run (and generated an output), you would need to uncomment `TaskPreprocessData().invalidate()` if you wanted to allow the processing to be re-run. This will also mean that all processes that rely on `TaskPreprocessData` would be re-run if called. This invalidation is specific to the particular 'configuration' of the task - if the task has configuration variables, you must ensure you uncomment the version with those variables in it. If we wanted to run `TaskGetAbnormalBoluses(model_type="isolation_forest")`, you'd need to invalidate the version with `model_type="isolation_forest"`; invalidating `TaskGetAbnormalBoluses()` would have no effect.
+##### Configuring Tasks to Be Run
+At the bottom of `optimized_analysis_pipeline.py`, you can uncomment certain lines of code to mark that parts (or all) of the analysis should be re-run. By default, d6tflow will not re-run operations that have already been performed; for example, if the task to import the raw data. `TaskGetInitialData()`, had already been run (and generated an output), you would need to uncomment ` TaskGetInitialData().invalidate(confirm=False)` if you wanted to re-load that data. This will also mean that all processes that rely on ` TaskGetInitialData` would be re-run if called. 
+
+This invalidation is specific to the particular 'configuration' of the task - if the task has configuration variables, you must ensure you uncomment the version with those variables in it. If we wanted to run `TaskGetAbnormalBoluses(model_type="isolation_forest")`, you'd need to invalidate the version with `model_type="isolation_forest"`; invalidating `TaskGetAbnormalBoluses()` would have no effect.
 
 Note that you must also `run` the task in order for it to execute; if we wanted to run (or re-run) the abnormal bolus classifier, we'd uncomment `d6tflow.run(TaskGetAbnormalBoluses())`. Running the whole pileline on a file with ~63,000 entries takes 50-60 seconds.
 
 If you run into the situation where the code is not running the tasks as intended, more information about task-run configuration can be found in the documentation at https://d6tflow.readthedocs.io/en/latest/.
+
+##### Passing Variables Into Tasks
+Some tasks (currently `TaskGetInitialData()` and `TaskGetAbnormalBoluses()`) can have variables passed in to change their behavior. For `TaskGetInitialData()`, you can pass in the desired number of days of data to be analyzed; default is 90 days. For `TaskGetAbnormalBoluses()`, you can pass in the desired unsupervised learning algorithm to use to analyze the data; default is "knn" (for k-nearest neighbors), but you can pass in "isolation_forest" to use an isolation forest model. 
 
 #### Output
 Outputs for the tasks are saved to individual folders (per task) within a `results` folder. If we wanted to find the csv output file from the abnormal bolus task, that would be contained in `results/TaskGetAbnormalBoluses`.
