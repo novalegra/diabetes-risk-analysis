@@ -72,8 +72,6 @@ This script:
     - fills in missing data
     - calculates the TDD for every day in the df, 
       and assigns it to rows from that day
-    - Finds the BGs from 3 hours before and after the doses
-    - Calculates the minutes of missing BG data from before/after the doses
     - Fills missing bgInput values with CGM data (if avaliable), or the median CGM value
     - Calculates the SAX string representation of BGs for the 3 hours before/after the dose
 '''
@@ -98,6 +96,13 @@ class TaskPreprocessData(d6tflow.tasks.TaskCSVPandas):
         self.save(processed_doses)
 
 
+''' 
+Find specific BG values for each dose in a dataset. 
+This task:
+    - Finds the BGs from 3 hours before and after the doses
+    - Calculates the minutes of missing BG data from before/after the doses
+    - Finds the BG value 30 mins before the dose, and 75 minutes after the dose
+'''
 class TaskPreprocessBGs(d6tflow.tasks.TaskCSVPandas):
     def requires(self):
         return {
@@ -113,6 +118,28 @@ class TaskPreprocessBGs(d6tflow.tasks.TaskCSVPandas):
         annotated_doses = find_bgs_before_and_after(initial_df, bgs)
         self.save(annotated_doses)
 
+''' 
+Merge the relevent columns from the 2 preprocessing tasks together. 
+These tasks were split to allow for multithreading of tasks, if enabled.
+'''
+class TaskMergePreprocessingTogether(d6tflow.tasks.TaskCSVPandas):
+    def requires(self):
+        return {
+            "processed_part_1":  TaskPreprocessData(), 
+            "processed_part_2": TaskPreprocessBGs()
+        }
+    
+    def run(self):
+        doses, bgs = self.inputLoad()
+        # Merge in the relevent BG data
+        doses["bgs_before"] = bgs["bgs_before"]
+        doses["bgs_after"] = bgs["bgs_after"]
+        doses["duration_gaps_before"] = bgs["duration_gaps_before"]
+        doses["duration_gaps_after"] = bgs["duration_gaps_after"]
+        doses["bg_30_min_before"] = bgs["bg_30_min_before"]
+        doses["bg_75_min_after"] = bgs["bg_75_min_after"]
+
+        self.save(doses)
 
 
 '''
@@ -123,23 +150,11 @@ This script trains the model using the "totalBolusAmount", "carbInput",
 class TaskGetAbnormalBoluses(d6tflow.tasks.TaskCSVPandas):
     model_type = luigi.Parameter(default = "knn")
     def requires(self):
-        return {
-            "preprocessed_doses": TaskPreprocessData(),
-            "bg_annotated_doses": TaskPreprocessBGs()
-        }
+        return TaskMergePreprocessingTogether()
     
     def run(self):
-        doses, bgs = self.inputLoad()
+        doses = self.inputLoad()
         doses["time"] = pd.to_datetime(doses["time"], infer_datetime_format=True)
-
-        # Merge in the relevent BG data
-        doses["bgs_before"] = bgs["bgs_before"]
-        doses["bgs_after"] = bgs["bgs_after"]
-        doses["duration_gaps_before"] = bgs["duration_gaps_before"]
-        doses["duration_gaps_after"] = bgs["duration_gaps_after"]
-        doses["bg_30_min_before"] = bgs["bg_30_min_before"]
-        doses["bg_75_min_after"] = bgs["bg_75_min_after"]
-
         abnormal_boluses = find_abnormal_boluses(doses, self.model_type)
         self.save(abnormal_boluses)
 
@@ -171,12 +186,12 @@ if __name__ == '__main__':
     # TaskGetAbnormalBoluses(model_type="knn").invalidate(confirm=False)
     # TaskGetAbnormalBasals().invalidate(confirm=False)
     ''' Uncomment lines below to mark that tasks to identify abnormal boluses with an Isolation Forest model should be re-run '''
-    # TaskGetAbnormalBoluses(model_type="isolation_forest").invalidate(confirm=False)
+    TaskGetAbnormalBoluses(model_type="isolation_forest").invalidate(confirm=False)
 
     ''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
     # d6tflow.run(TaskGetAbnormalBoluses(model_type="knn"), workers=2)
     ''' Uncomment line below to find the abnormal boluses using an Isolation Forest model '''
-    # d6tflow.run(TaskGetAbnormalBoluses(model_type="isolation_forest"), workers=2)
+    d6tflow.run(TaskGetAbnormalBoluses(model_type="isolation_forest"), workers=2)
     ''' Uncomment line below to find the abnormal basals '''
     # d6tflow.run(TaskGetAbnormalBasals(), workers=2)
     ''' Uncomment line below to process the dose data '''
