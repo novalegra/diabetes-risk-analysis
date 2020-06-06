@@ -17,7 +17,7 @@ data_to_predict = df[
         [
             "totalBolusAmount", 
             "carbInput", 
-            #"insulinCarbRatio", 
+            "insulinCarbRatio", 
             "bgInput", 
             "insulinSensitivity", 
             "TDD",

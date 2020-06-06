@@ -28,10 +28,28 @@ d6tflow.set_dir("../results")
 path = str(Path(__file__).parent.parent) + "/data/random_person.csv"
 assert(exists(path))
 
-''' Load the data at "path" into a Pandas dataframe '''
+''' 
+Load the data at "path" into a Pandas dataframe,
+extracting the last "days_to_process" days of data
+'''
 class TaskGetInitialData(d6tflow.tasks.TaskCSVPandas):
+    days_to_process = luigi.IntParameter(default = 90)
     def run(self):
         initial_df = pd.read_csv(path)
+        initial_df["time"] = pd.to_datetime(initial_df["time"])
+        initial_df.set_index(["time"])
+        initial_df.sort_values(by="time")
+
+        # Select the last "days_to_process" days of data
+        if initial_df.shape[0] > 0:
+            last_date = initial_df["time"].iloc[-1]
+            first_date = last_date - pd.Timedelta(days=self.days_to_process)
+
+            initial_df = initial_df.loc[
+                (initial_df["time"] > first_date) 
+                & (initial_df["time"] <= last_date)
+            ]
+
         self.save(initial_df)
 
 
@@ -186,12 +204,12 @@ if __name__ == '__main__':
     # TaskGetAbnormalBoluses(model_type="knn").invalidate(confirm=False)
     # TaskGetAbnormalBasals().invalidate(confirm=False)
     ''' Uncomment lines below to mark that tasks to identify abnormal boluses with an Isolation Forest model should be re-run '''
-    TaskGetAbnormalBoluses(model_type="isolation_forest").invalidate(confirm=False)
+    # TaskGetAbnormalBoluses(model_type="isolation_forest").invalidate(confirm=False)
 
     ''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
     # d6tflow.run(TaskGetAbnormalBoluses(model_type="knn"), workers=2)
     ''' Uncomment line below to find the abnormal boluses using an Isolation Forest model '''
-    d6tflow.run(TaskGetAbnormalBoluses(model_type="isolation_forest"), workers=2)
+    # d6tflow.run(TaskGetAbnormalBoluses(model_type="isolation_forest"), workers=2)
     ''' Uncomment line below to find the abnormal basals '''
     # d6tflow.run(TaskGetAbnormalBasals(), workers=2)
     ''' Uncomment line below to process the dose data '''
