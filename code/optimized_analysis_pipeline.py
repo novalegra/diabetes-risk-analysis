@@ -35,6 +35,7 @@ extracting the last "days_to_process" days of data
 class TaskGetInitialData(d6tflow.tasks.TaskCSVPandas):
     days_to_process = luigi.IntParameter(default = 90)
     def run(self):
+        assert(self.days_to_process > 0)
         initial_df = pd.read_csv(path)
         initial_df["time"] = pd.to_datetime(initial_df["time"])
         initial_df.set_index(["time"])

@@ -65,7 +65,7 @@ Note that you must also `run` the task in order for it to execute; if we wanted 
 If you run into the situation where the code is not running the tasks as intended, more information about task-run configuration can be found in the documentation at https://d6tflow.readthedocs.io/en/latest/.
 
 ##### Passing Variables Into Tasks
-Some tasks (currently `TaskGetInitialData()` and `TaskGetAbnormalBoluses()`) can have variables passed in to change their behavior. For `TaskGetInitialData()`, you can pass in the desired number of days of data to be analyzed; default is 90 days. For `TaskGetAbnormalBoluses()`, you can pass in the desired unsupervised learning algorithm to use to analyze the data; default is "knn" (for k-nearest neighbors), but you can pass in "isolation_forest" to use an isolation forest model. 
+Some tasks (currently `TaskGetInitialData()` and `TaskGetAbnormalBoluses()`) can have variables passed in to change their behavior. For `TaskGetInitialData()`, you can pass in the desired number of days of data to be analyzed; default is 90 days. For `TaskGetAbnormalBoluses()`, you can pass in the desired unsupervised learning algorithm to use to analyze the data; default is "knn" (for k-nearest neighbors), but you can pass in "isolation_forest" to use an isolation forest model. Note that the isolation forest is currently configured to accept the 4% of most-abnormal boluses, and this can be changed within `bolus_risk_analysis.py`.
 
 #### Output
 Outputs for the tasks are saved to individual folders (per task) within a `results` folder. If we wanted to find the csv output file from the abnormal bolus task, that would be contained in `results/TaskGetAbnormalBoluses`.
