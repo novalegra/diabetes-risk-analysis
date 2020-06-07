@@ -6,25 +6,43 @@ import matplotlib.pylab as plt
 from sklearn.ensemble import IsolationForest
 
 from bolus_risk_analysis import extract_and_process_boluses, train_model
+from basal_risk_analysis import extract_and_process_temp_basals
 
 
 # Path to the file of processed doses - YOU MUST FILL THIS IN
 path_to_file = "TO_FILL_IN.csv"
-df = extract_and_process_boluses(pd.read_csv(path_to_file))
+dose_type = "basals" # either "basals" or "boluses"
 
-# Get trained model
-data_to_predict = df[
+if dose_type == "boluses":
+    df = extract_and_process_boluses(pd.read_csv(path_to_file))
+    # Get trained model
+    data_to_predict = df[
+            [
+                "totalBolusAmount", 
+                "carbInput", 
+                "insulinCarbRatio", 
+                "bgInput", 
+                "insulinSensitivity", 
+                "TDD",
+                "bg_30_min_before", 
+                "bg_75_min_after"
+            ]
+        ]
+elif dose_type == "basals":
+    df = extract_and_process_temp_basals(pd.read_csv(path_to_file))
+    data_to_predict = df[
         [
-            "totalBolusAmount", 
-            "carbInput", 
-            "insulinCarbRatio", 
-            "bgInput", 
-            "insulinSensitivity", 
-            "TDD",
+            "duration", 
+            "percent", 
+            "rate",
+            "bgInput",
             "bg_30_min_before", 
             "bg_75_min_after"
         ]
     ]
+else:
+    ValueError("Invalid dose type selected")
+
 trained_model = train_model(data_to_predict, "isolation_forest")
 # Explain the model's predictions using SHAP
 explainer = shap.TreeExplainer(trained_model)
