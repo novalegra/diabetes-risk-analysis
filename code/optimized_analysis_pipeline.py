@@ -183,14 +183,15 @@ Identify abnormal temporary basals using a k-nearest neighbors clustering algori
 This script trains the model using the "duration", "percent", and "rate" columns
 '''
 class TaskGetAbnormalBasals(d6tflow.tasks.TaskCSVPandas):
+    model_type = luigi.Parameter(default = "knn")
     def requires(self):
-        return TaskPreprocessData()
+        return TaskMergePreprocessingTogether()
     
     def run(self):
-        doses = self.input().load()
+        doses = self.inputLoad()
         doses["time"] = pd.to_datetime(doses["time"], infer_datetime_format=True)
-        abnormal_basals = find_abnormal_temp_basals(doses)
-        self.save(abnormal_basals)
+        abnormal_temp_basals = find_abnormal_temp_basals(doses, self.model_type)
+        self.save(abnormal_temp_basals)
 
 
 if __name__ == '__main__':
