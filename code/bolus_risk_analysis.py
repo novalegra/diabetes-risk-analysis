@@ -111,7 +111,6 @@ def extract_and_process_boluses(processed_df):
             "bgs_after",
             "before_event_strings",
             "after_event_strings",
-            "bgInput",
             "bg_30_min_before", 
             "bg_75_min_after"
         ]

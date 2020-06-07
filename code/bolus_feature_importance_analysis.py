@@ -12,7 +12,7 @@ from bolus_risk_analysis import extract_and_process_boluses, train_model
 path_to_file = "TO_FILL_IN.csv"
 df = extract_and_process_boluses(pd.read_csv(path_to_file))
 
-# Get trained model model
+# Get trained model
 data_to_predict = df[
         [
             "totalBolusAmount", 
