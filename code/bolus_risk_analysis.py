@@ -6,6 +6,7 @@ import matplotlib.pylab as plt
 
 from pyod.models.knn import KNN
 from sklearn.ensemble import IsolationForest
+
 from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime, timedelta
@@ -59,22 +60,24 @@ def find_abnormal_boluses(processed_df, model_type="knn"):
     # Select our abnormal rows
     if model_type == "isolation_forest":
         # Isolation forest: 1 is normal, -1 is abnormal
-         print ("Outliers:", counts[0], "\nTotal:", shape[0], "\nPercent:", round(counts[0]/shape[0] * 100), "%")
-         abnormals = df.query('abnormal == -1')
+        if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+            print ("Outliers:", counts[0], "\nTotal:", shape[0], "\nPercent:", round(counts[0]/shape[0] * 100), "%")
+        abnormals = df.query('abnormal == -1')
     else:
         # KNN: 0 is normal, 1 is abnormal
-        print ("Outliers:", counts[1], "\nTotal:", shape[0], "\nPercent:", round(counts[1]/shape[0] * 100), "%")
+        if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+            print ("Outliers:", counts[1], "\nTotal:", shape[0], "\nPercent:", round(counts[1]/shape[0] * 100), "%")
         abnormals = df.query('abnormal == 1')
 
     return abnormals
 
-
+''' Train the specified model type (either knn or isolation_forest) and return the trained model '''
 def train_model(data_to_predict, model_type):
-    # will want to play around with n_neighbors
     if model_type == "isolation_forest":
         # Set a random state for reproducable results
         rng = np.random.RandomState(42)
         model = IsolationForest(random_state=rng, contamination=0.05)
+    # will want to play around with n_neighbors
     else:
         model = KNN()
 
@@ -83,7 +86,7 @@ def train_model(data_to_predict, model_type):
     return model
 
 
-''' Take a dataframe of processed dose values and extract the doses from it '''
+''' Take a dataframe of processed dose values and extract/further process the boluses from it '''
 def extract_and_process_boluses(processed_df):
     # Create a df with the data relevent to boluses
     df = processed_df[
