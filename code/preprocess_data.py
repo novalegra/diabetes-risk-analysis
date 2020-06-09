@@ -72,27 +72,30 @@ def find_bgs_before_and_after(initial_df, bgs, bg_consideration_interval=180):
 
 def make_dose_df(initial_df):
     # Create a df with dosing information
-    doses = initial_df[
-        [
-            # Categorical
-            "type", # type of data: CBG, basal, bolus, etc
-            "time",
-            "subType", # subtype of bolus: normal, extended, dual wave
-            "deliveryType", # type of basal: scheduled (according to programmed basal schedule) vs temp
+    try:
+        doses = initial_df[
+            [
+                # Categorical
+                "type", # type of data: CBG, basal, bolus, etc
+                "time",
+                "subType", # subtype of bolus: normal, extended, dual wave
+                "deliveryType", # type of basal: scheduled (according to programmed basal schedule) vs temp
 
-            # Numerical
-            "normal", # units delivered via a "normal" bolus
-            "extended", # units delivered via an extended bolus
-            "rate", # absolute basal rate
-            "insulinCarbRatio", 
-            "carbInput", # number of carbs input into bolus calculator
-            "insulinOnBoard",
-            "bgInput",
-            "insulinSensitivity",
-            "duration", # temp basal length
-            "percent", # percent of basal rate
+                # Numerical
+                "normal", # units delivered via a "normal" bolus
+                "extended", # units delivered via an extended bolus
+                "rate", # absolute basal rate
+                "insulinCarbRatio", 
+                "carbInput", # number of carbs input into bolus calculator
+                "insulinOnBoard",
+                "bgInput",
+                "insulinSensitivity",
+                "duration", # temp basal length
+                "percent", # percent of basal rate
+            ]
         ]
-    ]
+    except KeyError as e:
+        raise KeyError("Missing data column in the input data file; " + str(e))
 
     dose_map = {"basal": 0, "bolus": 1}
     doses = doses.replace({"type": dose_map})
