@@ -50,14 +50,14 @@ Run `deactivate` to stop the environment.
 
 "value" (CGM reading in mmol/L)
 
-Not all of these fields are filled for every dosing type. For example, boluses can have information in "type", "time", "normal", "subType", "normal", "extended", "insulinCarbRatio", "carbInput", "insulinOnBoard", "bgInput", and "insulinSensitivity".
+Not all of these fields are filled for every dosing type, but __all columns must be present in the file__, even if they are empty. For example, boluses can have information in "type", "time", "normal", "subType", "normal", "extended", "insulinCarbRatio", "carbInput", "insulinOnBoard", "bgInput", and "insulinSensitivity".
 
 ## Configuring the Run
 This code is designed to be used with python3, and the Anaconda environment is configured appropriately. If you're processing multiple files, you'll want to use the script in `bulk_processing.py`. If you're only processing one file, you can use `bulk_processing.py` or `optimized_analysis_pipeline.py`.
 
 To use `bulk_processing.py`, run the file. This file uses concurrent processes to run multiple files in parallel, which is significantly faster. You'll be prompted for a path to a txt file with information about the files that should be processed. This txt file should contain the absolute path(s) of the csv raw data file(s) to be processed (for example on Mac, `/Users/juliesmith/Downloads/diabetes-risk-analysis/raw_data.csv`), with each path being on a new line. The program will check that this path is correct before doing anything. 
 
-To use `optimized_analysis_pipeline.py`, you'll need to edit the code to specify the path to the file to be processed. You can do this by editing the `file_path` variable in `optimized_analysis_pipeline.py`. You should include the absolute path to the csv file (for example on Mac, `/Users/juliesmith/Downloads/diabetes-risk-analysis/raw_data.csv`). The program will check that this path is correct before importing the file. 
+To use `optimized_analysis_pipeline.py`, you'll need to edit the code to specify the path to the file to be processed. You can do this by editing the `file_path` variable in `optimized_analysis_pipeline.py`. You should include the absolute path to the csv file (for example on Mac, `/Users/juliesmith/Downloads/diabetes-risk-analysis/raw_data.csv`). The program will check that this path is correct before importing the file.
 
 ### Configuring Tasks to Be Run
 In the function `process_one_file` in `bulk_processing.py`, or at the bottom of `optimized_analysis_pipeline.py`, you can uncomment certain lines of code to mark that parts (or all) of the analysis should be re-run. By default, d6tflow will not re-run operations that have already been performed; for example, if the task to import the raw data. `TaskGetInitialData(path=file_path)`, had already been run (and generated an output) for a particular file path, you would need to uncomment `TaskGetInitialData(path=file_path).invalidate(confirm=False)` if you wanted to re-load that data. This will also mean that all processes that rely on `TaskGetInitialData` would be re-run if called.
