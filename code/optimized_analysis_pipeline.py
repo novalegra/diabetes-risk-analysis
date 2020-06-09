@@ -30,21 +30,20 @@ assert(exists(path))
 
 ''' 
 Load the data at "path" into a Pandas dataframe,
-extracting the last "days_to_process" days of data
+extracting the first "days_to_process" days of data
 '''
 class TaskGetInitialData(d6tflow.tasks.TaskCSVPandas):
-    days_to_process = luigi.IntParameter(default = 90)
+    days_to_process = luigi.IntParameter(default = -1)
     def run(self):
-        assert(self.days_to_process > 0)
         initial_df = pd.read_csv(path)
         initial_df["time"] = pd.to_datetime(initial_df["time"])
         initial_df.set_index(["time"])
         initial_df.sort_values(by="time")
 
-        # Select the last "days_to_process" days of data
-        if initial_df.shape[0] > 0:
-            last_date = initial_df["time"].iloc[-1]
-            first_date = last_date - pd.Timedelta(days=self.days_to_process)
+        # Select the first "days_to_process" days of data if that parameter was passed in
+        if initial_df.shape[0] > 0 and self.days_to_process > -1:
+            first_date = initial_df["time"].iloc[0]
+            last_date = first_date + pd.Timedelta(days=self.days_to_process)
 
             initial_df = initial_df.loc[
                 (initial_df["time"] > first_date) 
