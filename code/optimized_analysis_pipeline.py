@@ -205,11 +205,11 @@ See 'bulk_processor.py' for tools for processing multiple files at a time.
 """
 if __name__ == '__main__':
     ''' Path to the input file - YOU MUST FILL THIS IN '''
-    # file_path = "file_path.csv"
-    # assert(exists(file_path))
+    file_path = "/Users/annaquinlan/Desktop/Projects/diabetes-risk-analysis/data/Random Person.csv"
+    assert(exists(file_path))
 
     ''' Uncomment line below to mark that all tasks should be re-run '''
-    # TaskGetInitialData(path=file_path).invalidate(confirm=False)
+    TaskGetInitialData(path=file_path).invalidate(confirm=False)
     ''' Uncomment line below to mark that tasks related to BGs should be re-run '''
     # TaskGetBGData(path=file_path).invalidate(confirm=False)
     ''' Uncomment line below to mark that tasks for the preprocessing should be re-run '''
@@ -222,11 +222,11 @@ if __name__ == '__main__':
     # TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest").invalidate(confirm=False)
 
     ''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
-    # d6tflow.run(TaskGetAbnormalBoluses(path=file_path, model_type="knn"), workers=2)
+    d6tflow.run(TaskGetAbnormalBoluses(path=file_path, model_type="knn"), workers=2)
     ''' Uncomment line below to find the abnormal boluses using an Isolation Forest model '''
-    # d6tflow.run(TaskGetAbnormalBoluses(model_type="isolation_forest"), workers=2)
+    # d6tflow.run(TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest"), workers=2)
     ''' Uncomment line below to find the abnormal basals '''
-    # d6tflow.run(TaskGetAbnormalBasals(), workers=2)
+    # d6tflow.run(TaskGetAbnormalBasals(path=file_path), workers=2)
     ''' Uncomment line below to process the dose data '''
-    # d6tflow.run(TaskPreprocessData(), workers=2)
+    # d6tflow.run(TaskPreprocessData(path=file_path), workers=2)
 
