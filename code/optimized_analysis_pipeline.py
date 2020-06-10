@@ -22,7 +22,8 @@ Task Flow:
 2) Get BG df                
 3) Get SAX encodings   
 4) Pre-process the data     Pre-process the BGs used for visualizations   
-5) Run bolus analysis       Run basal analysis
+5) Merge preprocessing data together
+6) Run bolus analysis       Run basal analysis
 """
 
 ''' 
