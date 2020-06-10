@@ -205,7 +205,7 @@ See 'bulk_processor.py' for tools for processing multiple files at a time.
 """
 if __name__ == '__main__':
     ''' Path to the input file - YOU MUST FILL THIS IN '''
-    file_path = "/Users/annaquinlan/Desktop/Projects/diabetes-risk-analysis/data/Random Person.csv"
+    file_path = "FILL_THIS_IN.csv"
     assert(exists(file_path))
 
     ''' Uncomment line below to mark that all tasks should be re-run '''
