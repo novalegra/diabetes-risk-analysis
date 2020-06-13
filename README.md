@@ -71,7 +71,7 @@ If you run into the situation where the code is not running the tasks as intende
 ### Passing Variables Into Tasks
 Tasks can have variables passed in to change their behavior. 
 
-- For all tasks, you need to pass in the `path` variable to tell the code which file should be analyzed; this makes it so the tasks won't accidentally overwrite the run data for other files. 
+- For all tasks, you __need to__ pass in the `path` variable to tell the code which file should be analyzed; this makes it so the tasks won't accidentally overwrite the run data for other files. 
 - For all tasks, you _can_ pass in the `identifier` variable to add a file identifier to the title of the output file; this makes it easier to figure out which output files came from which raw data files. Note that only the first 16 characters will be present in the file title.
 - For `TaskGetInitialData()`, you can also pass in the desired number of days of data to be analyzed; default is all data. This variable is annoying to try to pass in due to the way d6tflow configures runs, and I would recommend just changing the default within the code itself to be the desired number of days.
 - For `TaskGetAbnormalBoluses()`, you can pass in the desired unsupervised learning algorithm to use to analyze the data; default is "knn" (for k-nearest neighbors), but you can pass in "isolation_forest" to use an isolation forest model. Note that the isolation forest is currently configured to accept the 4% of most-abnormal boluses, and this can be changed within `bolus_risk_analysis.py`.
