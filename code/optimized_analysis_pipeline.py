@@ -31,6 +31,7 @@ Load the data at "path" into a Pandas dataframe,
 extracting the first "days_to_process" days of data
 '''
 class TaskGetInitialData(d6tflow.tasks.TaskCSVPandas):
+    identifier = luigi.Parameter(default = "")
     path = luigi.Parameter()
     days_to_process = luigi.IntParameter(default = -1)
     def run(self):
@@ -61,9 +62,10 @@ This script also:
     - takes the base 10 log of the BG values for use in further analysis
 '''
 class TaskGetBGData(d6tflow.tasks.TaskCSVPandas):
+    identifier = luigi.Parameter(default = "")
     path = luigi.Parameter()
     def requires(self):
-        return TaskGetInitialData(path = self.path)
+        return TaskGetInitialData(path = self.path, identifier = self.identifier)
     
     def run(self):
         df = self.input().load()
@@ -73,9 +75,10 @@ class TaskGetBGData(d6tflow.tasks.TaskCSVPandas):
 
 ''' Assign SAX values to a dataframe of BG data into a column labeled "bin" '''
 class TaskGetSAX(d6tflow.tasks.TaskCSVPandas):
+    identifier = luigi.Parameter(default = "")
     path = luigi.Parameter()
     def requires(self):
-        return TaskGetBGData(path = self.path)
+        return TaskGetBGData(path = self.path, identifier = self.identifier)
     
     def run(self):
         bgs = self.input().load()
@@ -96,12 +99,13 @@ This script:
     - Calculates the SAX string representation of BGs for the 3 hours before/after the dose
 '''
 class TaskPreprocessData(d6tflow.tasks.TaskCSVPandas):
+    identifier = luigi.Parameter(default = "")
     path = luigi.Parameter()
     def requires(self):
         return {
-            "raw_df": TaskGetInitialData(path = self.path), 
-            "bg_df": TaskGetBGData(path = self.path), 
-            "sax_df": TaskGetSAX(path = self.path)
+            "raw_df": TaskGetInitialData(path = self.path, identifier = self.identifier),
+            "bg_df": TaskGetBGData(path = self.path, identifier = self.identifier),
+            "sax_df": TaskGetSAX(path = self.path, identifier = self.identifier)
         }
     
     def run(self):
@@ -125,11 +129,12 @@ This task:
     - Finds the BG value 30 mins before the dose, and 75 minutes after the dose
 '''
 class TaskPreprocessBGs(d6tflow.tasks.TaskCSVPandas):
+    identifier = luigi.Parameter(default = "")
     path = luigi.Parameter()
     def requires(self):
         return {
-            "raw_df": TaskGetInitialData(path = self.path), 
-            "bg_df": TaskGetBGData(path = self.path)
+            "raw_df": TaskGetInitialData(path = self.path, identifier = self.identifier),
+            "bg_df": TaskGetBGData(path = self.path, identifier = self.identifier)
         }
     
     def run(self):
@@ -145,11 +150,12 @@ Merge the relevent columns from the 2 preprocessing tasks together.
 These tasks were split to allow for multithreading of tasks, if enabled.
 '''
 class TaskMergePreprocessingTogether(d6tflow.tasks.TaskCSVPandas):
+    identifier = luigi.Parameter(default = "")
     path = luigi.Parameter()
     def requires(self):
         return {
-            "processed_part_1":  TaskPreprocessData(path = self.path), 
-            "processed_part_2": TaskPreprocessBGs(path = self.path)
+            "processed_part_1":  TaskPreprocessData(path = self.path, identifier = self.identifier),
+            "processed_part_2": TaskPreprocessBGs(path = self.path, identifier = self.identifier)
         }
     
     def run(self):
@@ -171,10 +177,11 @@ This script trains the model using the "totalBolusAmount", "carbInput",
 "insulinCarbRatio", "bgInput", "insulinSensitivity", and "TDD" columns
 '''
 class TaskGetAbnormalBoluses(d6tflow.tasks.TaskCSVPandas):
+    identifier = luigi.Parameter(default = "")
     path = luigi.Parameter()
     model_type = luigi.Parameter(default = "knn")
     def requires(self):
-        return TaskMergePreprocessingTogether(path = self.path)
+        return TaskMergePreprocessingTogether(path = self.path, identifier = self.identifier)
     
     def run(self):
         doses = self.inputLoad()
@@ -188,10 +195,11 @@ Identify abnormal temporary basals using a k-nearest neighbors clustering algori
 This script trains the model using the "duration", "percent", and "rate" columns
 '''
 class TaskGetAbnormalBasals(d6tflow.tasks.TaskCSVPandas):
+    identifier = luigi.Parameter(default = "")
     path = luigi.Parameter()
     model_type = luigi.Parameter(default = "knn")
     def requires(self):
-        return TaskMergePreprocessingTogether(path = self.path)
+        return TaskMergePreprocessingTogether(path = self.path, identifier = self.identifier)
     
     def run(self):
         doses = self.inputLoad()
@@ -209,25 +217,28 @@ if __name__ == '__main__':
     file_path = "FILL_THIS_IN.csv"
     assert(exists(file_path))
 
+    # Create a identifier based on the file path
+    identifier = file_path.split("/")[-1]
+
     ''' Uncomment line below to mark that all tasks should be re-run '''
-    TaskGetInitialData(path=file_path).invalidate(confirm=False)
+    TaskGetInitialData(path=file_path, identifier=identifier).invalidate(confirm=False)
     ''' Uncomment line below to mark that tasks related to BGs should be re-run '''
-    # TaskGetBGData(path=file_path).invalidate(confirm=False)
+    # TaskGetBGData(path=file_path, identifier=identifier).invalidate(confirm=False)
     ''' Uncomment line below to mark that tasks for the preprocessing should be re-run '''
-    # TaskPreprocessData(path=file_path).invalidate(confirm=False)
-    # TaskPreprocessBGs(path=file_path).invalidate(confirm=False)
+    # TaskPreprocessData(path=file_path, identifier=identifier).invalidate(confirm=False)
+    # TaskPreprocessBGs(path=file_path, identifier=identifier).invalidate(confirm=False)
     ''' Uncomment lines below to mark that tasks to identify abnormal boluses &/or basals with a KNN model should be re-run '''
-    # TaskGetAbnormalBoluses(path=file_path, model_type="knn").invalidate(confirm=False)
-    # TaskGetAbnormalBasals(path=file_path).invalidate(confirm=False)
+    # TaskGetAbnormalBoluses(path=file_path, model_type="knn", identifier=identifier).invalidate(confirm=False)
+    # TaskGetAbnormalBasals(path=file_path, identifier=identifier).invalidate(confirm=False)
     ''' Uncomment lines below to mark that tasks to identify abnormal boluses with an Isolation Forest model should be re-run '''
-    # TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest").invalidate(confirm=False)
+    # TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest", identifier=identifier).invalidate(confirm=False)
 
     ''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
-    d6tflow.run(TaskGetAbnormalBoluses(path=file_path, model_type="knn"), workers=2)
+    d6tflow.run(TaskGetAbnormalBoluses(path=file_path, model_type="knn", identifier=identifier), workers=2)
     ''' Uncomment line below to find the abnormal boluses using an Isolation Forest model '''
-    # d6tflow.run(TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest"), workers=2)
+    # d6tflow.run(TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest", identifier=identifier), workers=2)
     ''' Uncomment line below to find the abnormal basals '''
-    # d6tflow.run(TaskGetAbnormalBasals(path=file_path), workers=2)
+    # d6tflow.run(TaskGetAbnormalBasals(path=file_path, identifier=identifier), workers=2)
     ''' Uncomment line below to process the dose data '''
-    # d6tflow.run(TaskPreprocessData(path=file_path), workers=2)
+    # d6tflow.run(TaskPreprocessData(path=file_path, identifier=identifier), workers=2)
 
