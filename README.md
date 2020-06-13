@@ -62,7 +62,7 @@ To use `optimized_analysis_pipeline.py`, you'll need to edit the code to specify
 ### Configuring Tasks to Be Run
 In the function `process_one_file` in `bulk_processing.py`, or at the bottom of `optimized_analysis_pipeline.py`, you can uncomment certain lines of code to mark that parts (or all) of the analysis should be re-run. By default, d6tflow will not re-run operations that have already been performed; for example, if the task to import the raw data. `TaskGetInitialData(path=file_path)`, had already been run (and generated an output) for a particular file path, you would need to uncomment `TaskGetInitialData(path=file_path).invalidate(confirm=False)` if you wanted to re-load that data. This will also mean that all processes that rely on `TaskGetInitialData` would be re-run if called.
 
-This invalidation is specific to the particular 'configuration' of the task - if the task has configuration variables, you _must_ ensure you uncomment the version with those variables in it. If we wanted to run `TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest")`, you'd need to invalidate the version with `path=file_path` and `model_type="isolation_forest"`; invalidating `TaskGetAbnormalBoluses()` would have no effect.
+This invalidation is specific to the particular 'configuration' of the task - if the task has configuration variables, you _must_ ensure you uncomment the version with those variables in it. If we wanted to run `TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest", identifier=identifier)`, you'd need to invalidate the version with `path=file_path`, `model_type="isolation_forest"`, and `identifier=identifier`; invalidating `TaskGetAbnormalBoluses()` would have no effect.
 
 Note that you must also `run` the task in order for it to execute; if we wanted to run (or re-run) the abnormal bolus classifier, we'd uncomment `d6tflow.run(TaskGetAbnormalBoluses(path=file_path))`. Running the whole pileline on a file with ~63,000 entries takes 50-60 seconds.
 
@@ -72,6 +72,7 @@ If you run into the situation where the code is not running the tasks as intende
 Tasks can have variables passed in to change their behavior. 
 
 - For all tasks, you need to pass in the `path` variable to tell the code which file should be analyzed; this makes it so the tasks won't accidentally overwrite the run data for other files. 
+- For all tasks, you _can_ pass in the `identifier` variable to add a file identifier to the title of the output file; this makes it easier to figure out which output files came from which raw data files. Note that only the first 16 characters will be present in the file title.
 - For `TaskGetInitialData()`, you can also pass in the desired number of days of data to be analyzed; default is all data. This variable is annoying to try to pass in due to the way d6tflow configures runs, and I would recommend just changing the default within the code itself to be the desired number of days.
 - For `TaskGetAbnormalBoluses()`, you can pass in the desired unsupervised learning algorithm to use to analyze the data; default is "knn" (for k-nearest neighbors), but you can pass in "isolation_forest" to use an isolation forest model. Note that the isolation forest is currently configured to accept the 4% of most-abnormal boluses, and this can be changed within `bolus_risk_analysis.py`.
 
