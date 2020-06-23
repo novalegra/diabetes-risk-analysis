@@ -12,6 +12,8 @@ from basal_risk_analysis import extract_and_process_temp_basals
 # Path to the file of processed doses - YOU MUST FILL THIS IN
 path_to_file = "TO_FILL_IN.csv"
 assert(exists(path_to_file))
+# YOU MUST CHANGE THIS TO CHANGE THE DOSE TYPE THAT IS ANALYZED
+dose_type = "boluses" # either "basals" or "boluses"
 
 if dose_type == "boluses":
     df = extract_and_process_boluses(pd.read_csv(path_to_file))

@@ -19,29 +19,32 @@ def is_valid(path):
 
 """ Run the processing pipeline on one file """
 def process_one_file(file_path):
+    # Create a identifier based on the file path
+    identifier = file_path.split("/")[-1]
+
     """ Uncomment these lines depending on what the 'aim' of the processing is, and what steps should be re-run """
 
     ''' Uncomment line below to mark that all tasks should be re-run '''
-    # p.TaskGetInitialData(path=file_path).invalidate(confirm=False)
+    # p.TaskGetInitialData(path=file_path, identifier=identifier).invalidate(confirm=False)
     ''' Uncomment line below to mark that tasks related to BGs should be re-run '''
-    # p.TaskGetBGData(path=file_path).invalidate(confirm=False)
+    # p.TaskGetBGData(path=file_path, identifier=identifier).invalidate(confirm=False)
     ''' Uncomment line below to mark that tasks for the preprocessing should be re-run '''
-    # p.TaskPreprocessData(path=file_path).invalidate(confirm=False)
-    # p.TaskPreprocessBGs(path=file_path).invalidate(confirm=False)
+    # p.TaskPreprocessData(path=file_path, identifier=identifier).invalidate(confirm=False)
+    # p.TaskPreprocessBGs(path=file_path, identifier=identifier).invalidate(confirm=False)
     ''' Uncomment lines below to mark that tasks to identify abnormal boluses &/or basals with a KNN model should be re-run '''
-    # p.TaskGetAbnormalBoluses(path=file_path, model_type="knn").invalidate(confirm=False)
-    # p.TaskGetAbnormalBasals(path=file_path).invalidate(confirm=False)
+    # p.TaskGetAbnormalBoluses(path=file_path, model_type="knn", identifier=identifier).invalidate(confirm=False)
+    # p.TaskGetAbnormalBasals(path=file_path, identifier=identifier).invalidate(confirm=False)
     ''' Uncomment lines below to mark that tasks to identify abnormal boluses with an Isolation Forest model should be re-run '''
-    # p.TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest").invalidate(confirm=False)
+    # p.TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest", identifier=identifier).invalidate(confirm=False)
 
     ''' Uncomment line below to find the abnormal boluses using k-nearest neighbors'''
-    # d6tflow.run(p.TaskGetAbnormalBoluses(path=file_path, model_type="knn"))
+    # d6tflow.run(p.TaskGetAbnormalBoluses(path=file_path, model_type="knn", identifier=identifier))
     ''' Uncomment line below to find the abnormal boluses using an Isolation Forest model '''
-    # d6tflow.run(p.TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest"))
+    # d6tflow.run(p.TaskGetAbnormalBoluses(path=file_path, model_type="isolation_forest", identifier=identifier))
     ''' Uncomment line below to find the abnormal basals '''
-    # d6tflow.run(p.TaskGetAbnormalBasals(path=file_path))
+    # d6tflow.run(p.TaskGetAbnormalBasals(path=file_path, identifier=identifier))
     ''' Uncomment line below to process the dose data '''
-    # d6tflow.run(p.TaskPreprocessData(path=file_path))
+    # d6tflow.run(p.TaskPreprocessData(path=file_path, identifier=identifier))
 
 
 """ Run the processing pipeline on the files contained in the txt file at 'input_file_path' """
