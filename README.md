@@ -1,4 +1,4 @@
-# Tools for performing risk analysis on Tidepool data
+# Tools for identifying risky diabetes behavior using unsupervised machine learning
 
 ## Running the Virtual Environment
 ### To recreate the Virtual Environment
@@ -20,6 +20,8 @@ Run `deactivate` to stop the environment.
 `optimized_analysis_pipeline.py` can process an export of Tidepool data and identify the outliers in the data. Currently, this export must include CGM data and insulin dosing data. More specifically, the following columns should be present in the data:
 
 #### Columns:
+"jsonRowIndex"
+
 "type" (type of data: CBG, basal, bolus, etc)
 
 "time" (time of the event)
