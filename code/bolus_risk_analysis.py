@@ -57,7 +57,7 @@ def find_abnormal_boluses(processed_df, bgs, model_type="knn"):
     plt.show()
     '''
     # Filter for only doses with BG value post-event that's below 1st inter-quartile range, excluding missing values
-    lower_bg_bound = bgs["value"].quantile(0.25)
+    lower_bg_bound = max(70/18, bgs["value"].quantile(0.25))
     print("BG at 25th-percentile IQRL", lower_bg_bound)
     df["bgs_after"] = df["bgs_after"].apply(extract_array)
     df = df[df["bgs_after"].apply(lambda l: any(2 < bg <= lower_bg_bound for bg in l))]
@@ -98,6 +98,7 @@ def extract_and_process_boluses(processed_df):
     df = processed_df[
         [
             # Categorical
+            "jsonRowIndex",
             "type", # type of data: CBG, basal, bolus, etc
             "time",
             #"subType" # subtype of bolus: normal, extended, dual wave

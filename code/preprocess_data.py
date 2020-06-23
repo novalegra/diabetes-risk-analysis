@@ -76,6 +76,7 @@ def make_dose_df(initial_df):
         doses = initial_df[
             [
                 # Categorical
+                "jsonRowIndex",
                 "type", # type of data: CBG, basal, bolus, etc
                 "time",
                 "subType", # subtype of bolus: normal, extended, dual wave
