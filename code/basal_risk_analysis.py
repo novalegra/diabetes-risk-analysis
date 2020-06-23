@@ -11,6 +11,7 @@ from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime
 from bolus_risk_analysis import train_model
+from utils import extract_array
 
 def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
     print(processed_df.head())
@@ -39,13 +40,13 @@ def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
     df["abnormal"] = predictions
     if model_type == "isolation_forest":
         df["abnormality_score"] = model.decision_function(data_to_predict)
-    unique, counts = np.unique(predictions, return_counts=True)
 
     # Plot the results
     # Note that this plot only incorporates 3 dimensions of the data, so there are other 
     # factors present that might explain why certain values were/were not classified as outliers
     
     # Plot results
+    '''
     fig = plt.figure(1, figsize=(7,7))
     ax = Axes3D(fig, rect=[0, 0, 0.95, 1], elev=48, azim=134)
     ax.scatter(df["duration"], df["percent"], df["rate"],
@@ -55,20 +56,28 @@ def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
     ax.set_zlabel("Rate")
     plt.title("KNN To Classify Temp Basals", fontsize=14)
     plt.show()
+    '''
     
+    # Filter for only doses with BG value post-event that's below 1st inter-quartile range, excluding missing values
+    lower_bg_bound = max(70/18, bgs["value"].quantile(0.25))
+    print("BG at 25th-percentile IQRL", lower_bg_bound)
+    df["bgs_after"] = df["bgs_after"].apply(extract_array)
+    df = df[df["bgs_after"].apply(lambda l: any(2 < bg <= lower_bg_bound for bg in l))]
+    unique, counts = np.unique(df["abnormal"], return_counts=True)
+
     # Select our abnormal rows
-    if model_type == "isolation_forest":
-        # Isolation forest: 1 is normal, -1 is abnormal
-        if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+    # Isolation forest: 1 is normal, -1 is abnormal
+    # KNN: 0 is normal, 1 is abnormal
+    abnormals = df.query('abnormal == -1') if model_type == "isolation_forest" else df.query('abnormal == 1')
+
+    if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+        if model_type == "isolation_forest":
             print ("Outliers:", counts[0], "\nTotal:", shape[0], "\nPercent:", round(counts[0]/shape[0] * 100), "%")
-        abnormals = df.query('abnormal == -1')
-    else:
-        # KNN: 0 is normal, 1 is abnormal
-        if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+        else:
             print ("Outliers:", counts[1], "\nTotal:", shape[0], "\nPercent:", round(counts[1]/shape[0] * 100), "%")
-        abnormals = df.query('abnormal == 1')
 
     return abnormals
+
 
 ''' Take a dataframe of processed dose values and extract/further process the *temp* basals from it '''
 def extract_and_process_temp_basals(processed_df):
@@ -76,6 +85,7 @@ def extract_and_process_temp_basals(processed_df):
     df = processed_df[
         [
             # Categorical
+            "jsonRowIndex",
             "type", # type of data: CBG, basal, bolus, etc
             "deliveryType", # type of basal: scheduled (according to programmed basal schedule) vs temp
             "time",
