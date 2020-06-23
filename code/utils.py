@@ -2,6 +2,21 @@ import numpy as np
 import pandas as pd
 
 
+"""
+Take an "exported" array string from Excel and make it into an actual array
+
+s: string of array to convert
+"""
+def extract_array(s):
+    return [
+        float(
+            ''.join(
+                [c for c in i if c in '1234567890.-']
+                )
+        ) for i in s.split(",")
+    ] if len(s) > 2 else []
+
+
 """ 
 Get all of the values within the time interval
 
@@ -88,7 +103,7 @@ def annotate_with_sax(date, sax_df, sax_interval_length, time_length_of_string):
     
     date: date to compute the TDD on
     df: dataframe containing dosing data, which must have "totalBolusAmount" and "rate" columns
-    dummy_val: included so Pandas stops erroring when calling this function...
+    tdd_dict: dict to cache results for performance improvements
 
     Returns: total insulin given over a 24 hour period
 """
@@ -154,6 +169,7 @@ def read_bgs_from_df(df, bg_timedelta=5):
     bgs["value"].fillna(-1, inplace=True)
 
     return bgs
+
 
 """
     Finds the number of minutes of missing BG data over a given interval

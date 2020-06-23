@@ -181,12 +181,15 @@ class TaskGetAbnormalBoluses(d6tflow.tasks.TaskCSVPandas):
     path = luigi.Parameter()
     model_type = luigi.Parameter(default = "knn")
     def requires(self):
-        return TaskMergePreprocessingTogether(path = self.path, identifier = self.identifier)
+        return {
+            "processed_df": TaskMergePreprocessingTogether(path = self.path, identifier = self.identifier),
+            "bg_df": TaskGetBGData(path = self.path, identifier = self.identifier)
+        }
     
     def run(self):
-        doses = self.inputLoad()
+        doses, bgs = self.inputLoad()
         doses["time"] = pd.to_datetime(doses["time"], infer_datetime_format=True)
-        abnormal_boluses = find_abnormal_boluses(doses, self.model_type)
+        abnormal_boluses = find_abnormal_boluses(doses, bgs, self.model_type)
         self.save(abnormal_boluses)
 
 
@@ -199,12 +202,15 @@ class TaskGetAbnormalBasals(d6tflow.tasks.TaskCSVPandas):
     path = luigi.Parameter()
     model_type = luigi.Parameter(default = "knn")
     def requires(self):
-        return TaskMergePreprocessingTogether(path = self.path, identifier = self.identifier)
+        return {
+            "processed_df": TaskMergePreprocessingTogether(path = self.path, identifier = self.identifier),
+            "bg_df": TaskGetBGData(path = self.path, identifier = self.identifier)
+        }
     
     def run(self):
-        doses = self.inputLoad()
+        doses, bgs = self.inputLoad()
         doses["time"] = pd.to_datetime(doses["time"], infer_datetime_format=True)
-        abnormal_temp_basals = find_abnormal_temp_basals(doses, self.model_type)
+        abnormal_temp_basals = find_abnormal_temp_basals(doses, bgs, self.model_type)
         self.save(abnormal_temp_basals)
 
 

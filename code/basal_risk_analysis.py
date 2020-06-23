@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime
 from bolus_risk_analysis import train_model
 
-def find_abnormal_temp_basals(processed_df, model_type="knn"):
+def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
     print(processed_df.head())
     df = extract_and_process_temp_basals(processed_df)
 

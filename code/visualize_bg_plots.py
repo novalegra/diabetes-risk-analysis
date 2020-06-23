@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from math import isnan
 from os.path import exists
+from utils import extract_array
 
 # Get user inputs
 path = None
@@ -27,28 +28,8 @@ file_index -= 2
 
 while True:
     # Get times & values
-    ''' 
-    NOTE: this makes the assumption that the 'before' and 'after' values 
-    are continous, and that the interval between measurements is 5 minutes, 
-    which may lead to faulty predictions in the event of missing CGM data
-    (solution: tag those missing values as a value < 40 so they don't appear on the graph,
-     but the spacing stays correct)
-    '''
-    before_event_values = [
-        float(
-            ''.join(
-                [c for c in i if c in '1234567890.']
-                )
-        ) for i in df["bgs_before"].iloc[file_index].split(",")
-    ] if len(df["bgs_before"].iloc[file_index]) > 2 else []
-
-    after_event_values = [
-            float(
-                ''.join(
-                    [c for c in i if c in '1234567890.']
-                    )
-            ) for i in df["bgs_after"].iloc[file_index].split(",")
-        ] if len(df["bgs_after"].iloc[file_index]) > 2 else []
+    before_event_values = extract_array(df["bgs_before"].iloc[file_index])
+    after_event_values = extract_array(df["bgs_after"].iloc[file_index])
 
     if not isnan(df["bgInput"].iloc[file_index]):
         event_bg = df["bgInput"].iloc[file_index]

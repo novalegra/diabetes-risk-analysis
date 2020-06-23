@@ -10,9 +10,10 @@ from sklearn.ensemble import IsolationForest
 from pathlib import Path
 from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime, timedelta
+from utils import extract_array
 
 
-def find_abnormal_boluses(processed_df, model_type="knn"):
+def find_abnormal_boluses(processed_df, bgs, model_type="knn"):
     df = extract_and_process_boluses(processed_df)
 
     # Print some summary statistics
@@ -39,7 +40,6 @@ def find_abnormal_boluses(processed_df, model_type="knn"):
     df["abnormal"] = predictions
     if model_type == "isolation_forest":
         df["abnormality_score"] = model.decision_function(data_to_predict)
-    unique, counts = np.unique(predictions, return_counts=True)
     
     # Plot the results
     # Note that this plot only incorporates 3 dimensions of the data, so there are other 
@@ -56,20 +56,26 @@ def find_abnormal_boluses(processed_df, model_type="knn"):
     plt.title("IF To Classify Boluses" if model_type == "isolation_forest" else "KNN To Classify Boluses", fontsize=14)
     plt.show()
     '''
+    # Filter for only doses with BG value post-event that's below 1st inter-quartile range, excluding missing values
+    lower_bg_bound = bgs["value"].quantile(0.25)
+    print("BG at 25th-percentile IQRL", lower_bg_bound)
+    df["bgs_after"] = df["bgs_after"].apply(extract_array)
+    df = df[df["bgs_after"].apply(lambda l: any(2 < bg <= lower_bg_bound for bg in l))]
+    unique, counts = np.unique(df["abnormal"], return_counts=True)
 
     # Select our abnormal rows
-    if model_type == "isolation_forest":
-        # Isolation forest: 1 is normal, -1 is abnormal
-        if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+    # Isolation forest: 1 is normal, -1 is abnormal
+    # KNN: 0 is normal, 1 is abnormal
+    abnormals = df.query('abnormal == -1') if model_type == "isolation_forest" else df.query('abnormal == 1')
+
+    if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+        if model_type == "isolation_forest":
             print ("Outliers:", counts[0], "\nTotal:", shape[0], "\nPercent:", round(counts[0]/shape[0] * 100), "%")
-        abnormals = df.query('abnormal == -1')
-    else:
-        # KNN: 0 is normal, 1 is abnormal
-        if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+        else:
             print ("Outliers:", counts[1], "\nTotal:", shape[0], "\nPercent:", round(counts[1]/shape[0] * 100), "%")
-        abnormals = df.query('abnormal == 1')
 
     return abnormals
+
 
 ''' Train the specified model type (either knn or isolation_forest) and return the trained model '''
 def train_model(data_to_predict, model_type):
@@ -77,7 +83,7 @@ def train_model(data_to_predict, model_type):
         # Set a random state for reproducable results
         rng = np.random.RandomState(42)
         model = IsolationForest(random_state=rng, contamination=0.05)
-    # will want to play around with n_neighbors
+    # will want to play around with parameter tuning once dataset is labeled
     else:
         model = KNN()
 
