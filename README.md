@@ -15,6 +15,13 @@ run `conda activate risk-analysis` to start the environment.
 
 Run `deactivate` to stop the environment.
 
+## Quick Start
+### Situation: I have CSV with a Data Export & Want to Visualize It
+1. Ensure data-export CSV is in an acceptable format, essentially the first "row" of the CSV contains the column titles (not a patient ID number).
+2. Run that data-export file through the processing script in `optimized_analysis_pipeline.py`.
+3. `optimized_analysis_pipeline.py` will create a 'results' folder containing a sub-folder with the title 'TaskMergePreprocessingTogether'. The processed file from this folder is the one you will use as an input to the `visualize_bg_plots.py`.
+4. Run `visualize_bg_plots.py`; when it prompts you for the path to the data, enter the file path to the file contained the 'TaskMergePreprocessingTogether' folder (*not* the initial data-export file).
+
 ## Using the Tools
 ### File Formatting & Information
 `optimized_analysis_pipeline.py` can process an export of Tidepool data and identify the outliers in the data. Currently, this export must include CGM data and insulin dosing data. More specifically, the following columns should be present in the data:
