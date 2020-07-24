@@ -8,7 +8,7 @@ def plot_bg_frequencies(bg_df):
     df = df.iloc[1:]
 
     # Convert mmol -> mg/dL
-    values = [18*x for x in list(df.index)]
+    values = [18 * x for x in list(df.index)]
 
     plt.scatter(values, df["time"])
     plt.title("BG Distribution")
