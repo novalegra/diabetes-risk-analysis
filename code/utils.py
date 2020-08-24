@@ -7,14 +7,14 @@ Take an "exported" array string from Excel and make it into an actual array
 
 s: string of array to convert
 """
+
+
 def extract_array(s):
-    return [
-        float(
-            ''.join(
-                [c for c in i if c in '1234567890.-']
-                )
-        ) for i in s.split(",")
-    ] if len(s) > 2 else []
+    return (
+        [float("".join([c for c in i if c in "1234567890.-"])) for i in s.split(",")]
+        if len(s) > 2
+        else []
+    )
 
 
 """ 
@@ -27,17 +27,19 @@ second_offset: offset to apply to the end of the range, in minutes (can be negat
 
 Returns: a list of the values
 """
+
+
 def find_values(date, df, first_offset, second_offset, key):
-    start = date + pd.Timedelta(minutes = first_offset)
-    end = date + pd.Timedelta(minutes = second_offset)
+    start = date + pd.Timedelta(minutes=first_offset)
+    end = date + pd.Timedelta(minutes=second_offset)
 
     relevent_rows = list(
-        df.loc[
-            (df["time"] > start) 
-            & (df["time"] < end)
-        ].drop_duplicates(subset="time")[key]
+        df.loc[(df["time"] > start) & (df["time"] < end)].drop_duplicates(
+            subset="time"
+        )[key]
     )
     return relevent_rows
+
 
 """ 
 Get the first matching BG within the time interval
@@ -50,6 +52,8 @@ second_offset: offset to apply to the end of the range, in minutes (can be negat
 
 Returns: the first matching BG, if it can be found, and otherwise the average bgInput
 """
+
+
 def return_first_matching_bg(date, df, bgs, first_offset, second_offset):
     result = find_values(date, bgs, first_offset, second_offset, "value")
 
@@ -67,36 +71,33 @@ time_length_of_string: desired length of the string,
 
 returns the SAX string
 """
+
+
 def annotate_with_sax(date, sax_df, sax_interval_length, time_length_of_string):
     rounding_string = str(sax_interval_length) + "min"
 
     start = (
-        date + pd.Timedelta(minutes = time_length_of_string)
-        ).round(rounding_string) if time_length_of_string < 0 else date.round(rounding_string)
+        (date + pd.Timedelta(minutes=time_length_of_string)).round(rounding_string)
+        if time_length_of_string < 0
+        else date.round(rounding_string)
+    )
     end = (
-        date + pd.Timedelta(minutes = time_length_of_string)
-        ).round(rounding_string) if time_length_of_string > 0 else date.round(rounding_string)
+        (date + pd.Timedelta(minutes=time_length_of_string)).round(rounding_string)
+        if time_length_of_string > 0
+        else date.round(rounding_string)
+    )
 
     if time_length_of_string < 0:
-        string = "".join (
-            list(
-                sax_df.loc[
-                    (sax_df["time"] >= start) 
-                    & (sax_df["time"] < end)
-                ]["bin"]
-            )
+        string = "".join(
+            list(sax_df.loc[(sax_df["time"] >= start) & (sax_df["time"] < end)]["bin"])
         )
     else:
-        string = "".join (
-            list(
-                sax_df.loc[
-                    (sax_df["time"] > start) 
-                    & (sax_df["time"] <= end)
-                ]["bin"]
-            )
+        string = "".join(
+            list(sax_df.loc[(sax_df["time"] > start) & (sax_df["time"] <= end)]["bin"])
         )
 
     return string
+
 
 """
     Finds the total daily dose (TDD) of insulin for a given day.
@@ -107,11 +108,13 @@ def annotate_with_sax(date, sax_df, sax_interval_length, time_length_of_string):
 
     Returns: total insulin given over a 24 hour period
 """
+
+
 def find_TDD(date, df, tdd_dict):
     midnight = pd.DatetimeIndex([date]).normalize()[0]
     if midnight in tdd_dict:
         return tdd_dict[midnight]
-    
+
     mins_in_day = 24 * 60
 
     boluses = find_values(midnight, df, 0, mins_in_day + 1, "totalBolusAmount")
@@ -124,6 +127,7 @@ def find_TDD(date, df, tdd_dict):
 
 def get_column_TDDs(df):
     return df["time"].apply(find_TDD, args=(df))
+
 
 """
     Take a dataframe with a variety of data and extract the BG values.
@@ -139,15 +143,16 @@ def get_column_TDDs(df):
       where the time column has a consistant interval of bg_timedelta
       minutes, all missing BG values are filled with -1
 """
+
+
 def read_bgs_from_df(df, bg_timedelta=5):
     bgs = df[
         [
             # Categorical
-            "type", # type of data: CBG, basal, bolus, etc
+            "type",  # type of data: CBG, basal, bolus, etc
             "time",
-
             # Numerical
-            "value" # BG reading in mmol/L
+            "value",  # BG reading in mmol/L
         ]
     ]
     # Filter out other dose types
@@ -160,7 +165,9 @@ def read_bgs_from_df(df, bg_timedelta=5):
 
     # Make time intervals standardized
     interval_string = str(bg_timedelta) + "min"
-    standardized_times = bgs.groupby(pd.Grouper(key="time", freq=interval_string)).mean()
+    standardized_times = bgs.groupby(
+        pd.Grouper(key="time", freq=interval_string)
+    ).mean()
     bgs = bgs.set_index(["time"]).resample("5min").last().reset_index()
 
     # Take log of BG values
@@ -181,5 +188,9 @@ def read_bgs_from_df(df, bg_timedelta=5):
 
     Returns: number of minutes where no BG data is present
 """
-def find_duration_of_gap(bg_list, missing_data_key=-1, time_interval=5, list_duration=180):
+
+
+def find_duration_of_gap(
+    bg_list, missing_data_key=-1, time_interval=5, list_duration=180
+):
     return bg_list.count(missing_data_key) * 5 + max(0, (180 / 5 - len(bg_list)) * 5)

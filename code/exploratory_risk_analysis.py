@@ -14,27 +14,26 @@ initial_df = pd.read_csv(path + "/data/risk-data-sample.csv")
 df = initial_df[
     [
         # Categorical
-        #"time", 
-        "type", # type of data: CBG, basal, bolus, etc
-        "est.localTime", # local time
-        "deliveryType", # scheduled vs temp basal
-        "deviceTime", # time on the device
-        "units", # units of BG measurement
-
+        # "time",
+        "type",  # type of data: CBG, basal, bolus, etc
+        "est.localTime",  # local time
+        "deliveryType",  # scheduled vs temp basal
+        "deviceTime",  # time on the device
+        "units",  # units of BG measurement
         # Numerical
-        "expectedDuration", # duration of scheduled and/or temp basal?
-        "percent", # percent of basal rate
-        "rate", # absolute basal rate
-        "insulinOnBoard", # IOB
-        "recommended.net", # recommended bolus?
-        "carbInput", # input carb value (g)
-        "value" # BG value
+        "expectedDuration",  # duration of scheduled and/or temp basal?
+        "percent",  # percent of basal rate
+        "rate",  # absolute basal rate
+        "insulinOnBoard",  # IOB
+        "recommended.net",  # recommended bolus?
+        "carbInput",  # input carb value (g)
+        "value",  # BG value
     ]
 ]
 
 # Fill NaN values
-#df = df.dropna(subset=["type", "est.localTime"])
-'''df.fillna(
+# df = df.dropna(subset=["type", "est.localTime"])
+"""df.fillna(
     {
         "type":"none",
         "deliveryType":"n/a",
@@ -49,7 +48,7 @@ df = initial_df[
         #"value":df["value"].median(), # TODO: check in about this one
     },
     inplace=True
-)'''
+)"""
 
 # Print some summary statistics
 print("Head")
@@ -60,21 +59,21 @@ print(df.describe().apply(lambda s: s.apply(lambda x: format(x, "f"))))
 
 print(df["type"].value_counts())
 # Get a sense of distribution
-#sns.distplot(df["expectedDuration"])
-#sns.despine()
-#plt.scatter(range(df.shape[0]), np.sort(df["percent"].values))
+# sns.distplot(df["expectedDuration"])
+# sns.despine()
+# plt.scatter(range(df.shape[0]), np.sort(df["percent"].values))
 plt.show()
 
 
 # Print correlation plot
-'''
+"""
 corr = df.corr(min_periods=10) # Plot the heatmap
 print(corr.columns)
 sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, annot=True, cmap=sns.diverging_palette(220, 20, as_cmap=True))
 plt.show()
-'''
+"""
 
-'''
+"""
 # Create isolation forest for one attribute
 df.dropna(subset=["expectedDuration"], inplace=True)
 isolation_forest = IsolationForest(n_estimators=100)
@@ -91,4 +90,4 @@ plt.legend()
 plt.ylabel('Anomaly Score')
 plt.xlabel('Expected Duration')
 plt.show()
-'''
+"""

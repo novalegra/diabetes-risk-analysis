@@ -11,35 +11,35 @@ from basal_risk_analysis import extract_and_process_temp_basals
 
 # Path to the file of processed doses - YOU MUST FILL THIS IN
 path_to_file = "TO_FILL_IN.csv"
-assert(exists(path_to_file))
+assert exists(path_to_file)
 # YOU MUST CHANGE THIS TO CHANGE THE DOSE TYPE THAT IS ANALYZED
-dose_type = "boluses" # either "basals" or "boluses"
+dose_type = "boluses"  # either "basals" or "boluses"
 
 if dose_type == "boluses":
     df = extract_and_process_boluses(pd.read_csv(path_to_file))
     # Get trained model
     data_to_predict = df[
-            [
-                "totalBolusAmount", 
-                "carbInput", 
-                "insulinCarbRatio", 
-                "bgInput", 
-                "insulinSensitivity", 
-                "TDD",
-                "bg_30_min_before", 
-                "bg_75_min_after"
-            ]
+        [
+            "totalBolusAmount",
+            "carbInput",
+            "insulinCarbRatio",
+            "bgInput",
+            "insulinSensitivity",
+            "TDD",
+            "bg_30_min_before",
+            "bg_75_min_after",
         ]
+    ]
 elif dose_type == "basals":
     df = extract_and_process_temp_basals(pd.read_csv(path_to_file))
     data_to_predict = df[
         [
-            "duration", 
-            "percent", 
+            "duration",
+            "percent",
             "rate",
             "bgInput",
-            "bg_30_min_before", 
-            "bg_75_min_after"
+            "bg_30_min_before",
+            "bg_75_min_after",
         ]
     ]
 else:
@@ -56,4 +56,3 @@ shap.summary_plot(shap_values, data_to_predict, plot_type="bar")
 # For each data feature, plot the impact on abnormality score vs value (negative -> more abnormal)
 for col in data_to_predict.columns:
     shap.dependence_plot(col, shap_values, data_to_predict)
-

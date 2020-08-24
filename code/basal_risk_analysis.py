@@ -13,6 +13,7 @@ from datetime import datetime
 from bolus_risk_analysis import train_model
 from utils import extract_array
 
+
 def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
     print(processed_df.head())
     df = extract_and_process_temp_basals(processed_df)
@@ -26,15 +27,15 @@ def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
 
     data_to_predict = df[
         [
-            "duration", 
-            "percent", 
+            "duration",
+            "percent",
             "rate",
             "bgInput",
-            "bg_30_min_before", 
-            "bg_75_min_after"
+            "bg_30_min_before",
+            "bg_75_min_after",
         ]
     ]
-    
+
     model = train_model(data_to_predict, model_type)
     predictions = model.predict(data_to_predict)
     df["abnormal"] = predictions
@@ -42,11 +43,11 @@ def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
         df["abnormality_score"] = model.decision_function(data_to_predict)
 
     # Plot the results
-    # Note that this plot only incorporates 3 dimensions of the data, so there are other 
+    # Note that this plot only incorporates 3 dimensions of the data, so there are other
     # factors present that might explain why certain values were/were not classified as outliers
-    
+
     # Plot results
-    '''
+    """
     fig = plt.figure(1, figsize=(7,7))
     ax = Axes3D(fig, rect=[0, 0, 0.95, 1], elev=48, azim=134)
     ax.scatter(df["duration"], df["percent"], df["rate"],
@@ -56,10 +57,10 @@ def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
     ax.set_zlabel("Rate")
     plt.title("KNN To Classify Temp Basals", fontsize=14)
     plt.show()
-    '''
-    
+    """
+
     # Filter for only doses with BG value post-event that's below 1st inter-quartile range, excluding missing values
-    lower_bg_bound = max(70/18, bgs["value"].quantile(0.25))
+    lower_bg_bound = max(70 / 18, bgs["value"].quantile(0.25))
     print("BG at 25th-percentile IQRL", lower_bg_bound)
     df["bgs_after"] = df["bgs_after"].apply(extract_array)
     df = df[df["bgs_after"].apply(lambda l: any(2 < bg <= lower_bg_bound for bg in l))]
@@ -68,33 +69,55 @@ def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
     # Select our abnormal rows
     # Isolation forest: 1 is normal, -1 is abnormal
     # KNN: 0 is normal, 1 is abnormal
-    abnormals = df.query('abnormal == -1') if model_type == "isolation_forest" else df.query('abnormal == 1')
+    abnormals = (
+        df.query("abnormal == -1")
+        if model_type == "isolation_forest"
+        else df.query("abnormal == 1")
+    )
 
-    if len(counts) > 1: # Check to make sure there are both outliers & normal values (not just 1 type)
+    if (
+        len(counts) > 1
+    ):  # Check to make sure there are both outliers & normal values (not just 1 type)
         if model_type == "isolation_forest":
-            print ("Outliers:", counts[0], "\nTotal:", shape[0], "\nPercent:", round(counts[0]/shape[0] * 100), "%")
+            print(
+                "Outliers:",
+                counts[0],
+                "\nTotal:",
+                shape[0],
+                "\nPercent:",
+                round(counts[0] / shape[0] * 100),
+                "%",
+            )
         else:
-            print ("Outliers:", counts[1], "\nTotal:", shape[0], "\nPercent:", round(counts[1]/shape[0] * 100), "%")
+            print(
+                "Outliers:",
+                counts[1],
+                "\nTotal:",
+                shape[0],
+                "\nPercent:",
+                round(counts[1] / shape[0] * 100),
+                "%",
+            )
 
     return abnormals
 
 
-''' Take a dataframe of processed dose values and extract/further process the *temp* basals from it '''
+""" Take a dataframe of processed dose values and extract/further process the *temp* basals from it """
+
+
 def extract_and_process_temp_basals(processed_df):
     # Create a df with the data relevent to basals
     df = processed_df[
         [
             # Categorical
             "jsonRowIndex",
-            "type", # type of data: CBG, basal, bolus, etc
-            "deliveryType", # type of basal: scheduled (according to programmed basal schedule) vs temp
+            "type",  # type of data: CBG, basal, bolus, etc
+            "deliveryType",  # type of basal: scheduled (according to programmed basal schedule) vs temp
             "time",
-
             # Numerical
-            "duration", # temp basal length
-            "percent", # percent of basal rate
-            "rate", # absolute basal rate
-
+            "duration",  # temp basal length
+            "percent",  # percent of basal rate
+            "rate",  # absolute basal rate
             # Fields from processing
             "TDD",
             "bgs_before",
@@ -102,8 +125,8 @@ def extract_and_process_temp_basals(processed_df):
             "before_event_strings",
             "after_event_strings",
             "bgInput",
-            "bg_30_min_before", 
-            "bg_75_min_after"
+            "bg_30_min_before",
+            "bg_75_min_after",
         ]
     ]
     type_map = {"temp": 0}
@@ -112,14 +135,17 @@ def extract_and_process_temp_basals(processed_df):
     # Filter to get temp basals
     df = df.loc[(df["type"] == 0) & (df["deliveryType"] == 0)]
     # Drop if any of the values that would be passed into model are NaN
-    df.dropna(subset=[
-        "duration", 
-        "percent", 
-        "rate",
-        "bgInput",
-        "bg_30_min_before", 
-        "bg_75_min_after"
-    ], inplace=True)
+    df.dropna(
+        subset=[
+            "duration",
+            "percent",
+            "rate",
+            "bgInput",
+            "bg_30_min_before",
+            "bg_75_min_after",
+        ],
+        inplace=True,
+    )
     # Convert the time strings to pandas datetime format
     df["time"] = pd.to_datetime(df["time"], infer_datetime_format=True)
 

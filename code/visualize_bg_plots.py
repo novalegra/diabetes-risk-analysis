@@ -19,7 +19,12 @@ df = pd.read_csv(path)
 file_index = -1
 while file_index < 2 or file_index > len(df) + 1:
     try:
-        file_index = int(input("What row number would you like visualized? (indexed including the csv header) "))
+        file_index = int(
+            input(
+                "What row number would you like visualized? (indexed including the csv"
+                " header) "
+            )
+        )
     except:
         print("Invalid entry; row must be between 2 and the size of the dataframe")
         continue
@@ -33,7 +38,12 @@ while True:
 
     if not isnan(df["bgInput"].iloc[file_index]):
         event_bg = df["bgInput"].iloc[file_index]
-    elif len(before_event_values) > 0 and len(after_event_values) > 0 and before_event_values[-1] != -1 and after_event_values[0] != -1:
+    elif (
+        len(before_event_values) > 0
+        and len(after_event_values) > 0
+        and before_event_values[-1] != -1
+        and after_event_values[0] != -1
+    ):
         event_bg = (before_event_values[-1] + after_event_values[0]) / 2
     else:
         event_bg = 0
@@ -69,8 +79,16 @@ while True:
     plt.show()
 
     try:
-        file_index = int(input("What row number would you like visualized? (indexed including the csv header) ")) - 2
-        assert(file_index >= 0 and file_index < len(df) + 1)
+        file_index = (
+            int(
+                input(
+                    "What row number would you like visualized? (indexed including the"
+                    " csv header) "
+                )
+            )
+            - 2
+        )
+        assert file_index >= 0 and file_index < len(df) + 1
     except:
         print("Quitting...")
         break
