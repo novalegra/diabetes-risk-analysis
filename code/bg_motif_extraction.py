@@ -46,6 +46,7 @@ for yi in range(20):
         i += 1
     plt.plot(km.cluster_centers_[yi].ravel(), "r-")
     plt.xlim(0, sz)
+    plt.ylim(0, 400)
     plt.text(0.55, 0.85,'Cluster %d' % (yi + 1),
              transform=plt.gca().transAxes)
     if yi == 1:
