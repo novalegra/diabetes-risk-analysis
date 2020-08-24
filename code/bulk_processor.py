@@ -67,7 +67,7 @@ def process_files(input_file_path):
 
 if __name__ == "__main__":
     # Get the input file path
-    input_file = input("Input file path: ")
+    input_file = "/Users/annaquinlan/Desktop/diabetes-risk-analysis/data/files_to_process.txt"#input("Input file path: ")
     while not is_valid(input_file):
         input_file = input("Input file path: ")
 

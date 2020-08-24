@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pylab as plt
 
 from sklearn.ensemble import IsolationForest
+from os.path import exists
 
 from bolus_risk_analysis import extract_and_process_boluses, train_model
 from basal_risk_analysis import extract_and_process_temp_basals

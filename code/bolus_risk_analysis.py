@@ -12,7 +12,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime, timedelta
 from utils import extract_array
 
-
 def find_abnormal_boluses(processed_df, bgs, model_type="knn"):
     df = extract_and_process_boluses(processed_df)
 
@@ -48,7 +47,7 @@ def find_abnormal_boluses(processed_df, bgs, model_type="knn"):
     fig = plt.figure(1, figsize=(7,7))
     ax = Axes3D(fig, rect=[0, 0, 0.95, 1], elev=48, azim=134)
     ax.scatter(df["totalBolusAmount"], df["carbInput"], df["TDD"],
-            c=predictions, edgecolor="k", s=50)
+            c=df["abnormal], edgecolor="k", s=50)
     ax.set_xlabel("Bolus Amount")
     ax.set_ylabel("Carb Amount")
     ax.set_zlabel("TDD")

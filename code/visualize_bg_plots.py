@@ -6,7 +6,7 @@ from os.path import exists
 from utils import extract_array
 
 # Get user inputs
-path = None
+path = "/Users/annaquinlan/Desktop/diabetes-risk-analysis/data/risky_behavior_processed_doses.csv"#None
 while path == None or not exists(path):
     path = input("Path to input file: ")
     if not exists(path):
@@ -32,6 +32,7 @@ while file_index < 2 or file_index > len(df) + 1:
 file_index -= 2
 
 while True:
+#for file_index in range(0, len(df)):
     # Get times & values
     before_event_values = extract_array(df["bgs_before"].iloc[file_index])
     after_event_values = extract_array(df["bgs_after"].iloc[file_index])
@@ -66,13 +67,13 @@ while True:
     print(df.iloc[file_index])
 
     # Plot the graph
-    max_y = max(250, max(all_bg_values) + 10)
+    max_y = max(150, max(all_bg_values) + 10)
     min_y = 30
     plt.ylim(min_y, max_y)
     plt.scatter(all_times, all_bg_values)
     # Plot the BG at the abnormal event as a star
     plt.scatter([0], [event_bg], marker="o", s=100)
-    plt.title("Dose at Row " + str(file_index + 2))
+    plt.title("Example Blood Glucose Tracing")#"Dose at Row " + str(file_index + 2))
     plt.xlabel("Minutes since dose event")
     plt.ylabel("BG (mg/dL)")
 
