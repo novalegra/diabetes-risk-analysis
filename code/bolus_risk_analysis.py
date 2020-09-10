@@ -12,6 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from datetime import datetime, timedelta
 from utils import extract_array
 
+
 def find_abnormal_boluses(processed_df, bgs, model_type="knn"):
     df = extract_and_process_boluses(processed_df)
 
@@ -98,10 +99,8 @@ def find_abnormal_boluses(processed_df, bgs, model_type="knn"):
     return abnormals
 
 
-""" Train the specified model type (either knn or isolation_forest) and return the trained model """
-
-
 def train_model(data_to_predict, model_type):
+    """ Train the specified model type (either knn or isolation_forest) and return the trained model """
     if model_type == "isolation_forest":
         # Set a random state for reproducable results
         rng = np.random.RandomState(42)
@@ -115,10 +114,8 @@ def train_model(data_to_predict, model_type):
     return model
 
 
-""" Take a dataframe of processed dose values and extract/further process the boluses from it """
-
-
 def extract_and_process_boluses(processed_df):
+    """ Take a dataframe of processed dose values and extract/further process the boluses from it """
     # Create a df with the data relevent to boluses
     df = processed_df[
         [

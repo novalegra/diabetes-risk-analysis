@@ -102,10 +102,11 @@ def find_abnormal_temp_basals(processed_df, bgs, model_type="knn"):
     return abnormals
 
 
-""" Take a dataframe of processed dose values and extract/further process the *temp* basals from it """
+
 
 
 def extract_and_process_temp_basals(processed_df):
+    """ Take a dataframe of processed dose values and extract/further process the *temp* basals from it """
     # Create a df with the data relevent to basals
     df = processed_df[
         [

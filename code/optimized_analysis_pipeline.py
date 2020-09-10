@@ -26,13 +26,13 @@ Task Flow:
 6) Run bolus analysis       Run basal analysis
 """
 
-""" 
-Load the data at "path" into a Pandas dataframe,
-extracting the first "days_to_process" days of data
-"""
-
 
 class TaskGetInitialData(d6tflow.tasks.TaskCSVPandas):
+    """ 
+    Load the data at "path" into a Pandas dataframe,
+    extracting the first "days_to_process" days of data
+    """
+
     identifier = luigi.Parameter(default="")
     path = luigi.Parameter()
     days_to_process = luigi.IntParameter(default=-1)
@@ -56,16 +56,15 @@ class TaskGetInitialData(d6tflow.tasks.TaskCSVPandas):
         self.save(initial_df)
 
 
-""" 
-Load the blood glucose data into a Pandas dataframe 
-This script also:
-    - normalizes the BG data to a particular time interval (defaults to 5 minutes)
-    - fills missing values with -1
-    - takes the base 10 log of the BG values for use in further analysis
-"""
-
-
 class TaskGetBGData(d6tflow.tasks.TaskCSVPandas):
+    """ 
+    Load the blood glucose data into a Pandas dataframe 
+    This script also:
+        - normalizes the BG data to a particular time interval (defaults to 5 minutes)
+        - fills missing values with -1
+        - takes the base 10 log of the BG values for use in further analysis
+    """
+
     identifier = luigi.Parameter(default="")
     path = luigi.Parameter()
 
@@ -78,10 +77,9 @@ class TaskGetBGData(d6tflow.tasks.TaskCSVPandas):
         self.save(bgs)
 
 
-""" Assign SAX values to a dataframe of BG data into a column labeled "bin" """
-
-
 class TaskGetSAX(d6tflow.tasks.TaskCSVPandas):
+    """ Assign SAX values to a dataframe of BG data into a column labeled "bin" """
+
     identifier = luigi.Parameter(default="")
     path = luigi.Parameter()
 
@@ -95,20 +93,19 @@ class TaskGetSAX(d6tflow.tasks.TaskCSVPandas):
         self.save(sax_encodings)
 
 
-""" 
-Preprocess dose data for use in machine learning 
-
-This script:
-    - extracts all basals and boluses
-    - fills in missing data
-    - calculates the TDD for every day in the df, 
-      and assigns it to rows from that day
-    - Fills missing bgInput values with CGM data (if avaliable), or the median CGM value
-    - Calculates the SAX string representation of BGs for the 3 hours before/after the dose
-"""
-
-
 class TaskPreprocessData(d6tflow.tasks.TaskCSVPandas):
+    """ 
+    Preprocess dose data for use in machine learning 
+
+    This script:
+        - extracts all basals and boluses
+        - fills in missing data
+        - calculates the TDD for every day in the df, 
+        and assigns it to rows from that day
+        - Fills missing bgInput values with CGM data (if avaliable), or the median CGM value
+        - Calculates the SAX string representation of BGs for the 3 hours before/after the dose
+    """
+
     identifier = luigi.Parameter(default="")
     path = luigi.Parameter()
 
@@ -134,16 +131,15 @@ class TaskPreprocessData(d6tflow.tasks.TaskCSVPandas):
         self.save(processed_doses)
 
 
-""" 
-Find specific BG values for each dose in a dataset. 
-This task:
-    - Finds the BGs from 3 hours before and after the doses
-    - Calculates the minutes of missing BG data from before/after the doses
-    - Finds the BG value 30 mins before the dose, and 75 minutes after the dose
-"""
-
-
 class TaskPreprocessBGs(d6tflow.tasks.TaskCSVPandas):
+    """ 
+    Find specific BG values for each dose in a dataset. 
+    This task:
+        - Finds the BGs from 3 hours before and after the doses
+        - Calculates the minutes of missing BG data from before/after the doses
+        - Finds the BG value 30 mins before the dose, and 75 minutes after the dose
+    """
+
     identifier = luigi.Parameter(default="")
     path = luigi.Parameter()
 
@@ -162,13 +158,12 @@ class TaskPreprocessBGs(d6tflow.tasks.TaskCSVPandas):
         self.save(annotated_doses)
 
 
-""" 
-Merge the relevent columns from the 2 preprocessing tasks together. 
-These tasks were split to allow for multithreading of tasks, if enabled.
-"""
-
-
 class TaskMergePreprocessingTogether(d6tflow.tasks.TaskCSVPandas):
+    """ 
+    Merge the relevent columns from the 2 preprocessing tasks together. 
+    These tasks were split to allow for multithreading of tasks, if enabled.
+    """
+
     identifier = luigi.Parameter(default="")
     path = luigi.Parameter()
 
@@ -195,14 +190,13 @@ class TaskMergePreprocessingTogether(d6tflow.tasks.TaskCSVPandas):
         self.save(doses)
 
 
-"""
-Identify abnormal boluses using a k-nearest neighbors clustering algorithm.
-This script trains the model using the "totalBolusAmount", "carbInput", 
-"insulinCarbRatio", "bgInput", "insulinSensitivity", and "TDD" columns
-"""
-
-
 class TaskGetAbnormalBoluses(d6tflow.tasks.TaskCSVPandas):
+    """
+    Identify abnormal boluses using a k-nearest neighbors clustering algorithm.
+    This script trains the model using the "totalBolusAmount", "carbInput", 
+    "insulinCarbRatio", "bgInput", "insulinSensitivity", and "TDD" columns
+    """
+
     identifier = luigi.Parameter(default="")
     path = luigi.Parameter()
     model_type = luigi.Parameter(default="knn")
@@ -222,13 +216,12 @@ class TaskGetAbnormalBoluses(d6tflow.tasks.TaskCSVPandas):
         self.save(abnormal_boluses)
 
 
-"""
-Identify abnormal temporary basals using a k-nearest neighbors clustering algorithm.
-This script trains the model using the "duration", "percent", and "rate" columns
-"""
-
-
 class TaskGetAbnormalBasals(d6tflow.tasks.TaskCSVPandas):
+    """
+    Identify abnormal temporary basals using a k-nearest neighbors clustering algorithm.
+    This script trains the model using the "duration", "percent", and "rate" columns
+    """
+
     identifier = luigi.Parameter(default="")
     path = luigi.Parameter()
     model_type = luigi.Parameter(default="knn")
@@ -254,7 +247,7 @@ See 'bulk_processor.py' for tools for processing multiple files at a time.
 """
 if __name__ == "__main__":
     """ Path to the input file - YOU MUST FILL THIS IN """
-    file_path = "FILL_THIS_IN.csv"
+    file_path = "/Users/annaquinlan/Downloads/csv/0d3c34251db5504ea2df5ef4aca7ccc015103ce40a3cb7d1a7699c51f94414ce.csv"
     assert exists(file_path)
 
     # Create a identifier based on the file path

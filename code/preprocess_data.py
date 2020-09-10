@@ -60,10 +60,8 @@ def preprocess_dose_data(
     return doses
 
 
-""" Find 'bg_consideration_interval'-worth of the BGs before & after a df of dose events, in addition to the length of CGM data loss """
-
-
 def find_bgs_before_and_after(initial_df, bgs, bg_consideration_interval=180):
+    """ Find 'bg_consideration_interval'-worth of the BGs before & after a df of dose events, in addition to the length of CGM data loss """
     doses = make_dose_df(initial_df)
     # Get BGs before the event
     doses["bgs_before"] = doses["time"].apply(

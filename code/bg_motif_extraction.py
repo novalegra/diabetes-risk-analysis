@@ -18,9 +18,15 @@ def bin_into_intervals(bgs, interval_length, delta=5):
     bg_list = [i * 18 for i in bg_list]
 
     if len(bg_list) < intervals_per_window:
-        Exception("Cannot form", interval_length, "minute windows with", len(bg_list) * delta, "minutes of data")
+        Exception(
+            "Cannot form",
+            interval_length,
+            "minute windows with",
+            len(bg_list) * delta,
+            "minutes of data",
+        )
     output_builder = []
-    curr = deque(bg_list[0:interval_length]) # initialize with interval_length BGs
+    curr = deque(bg_list[0:interval_length])  # initialize with interval_length BGs
 
     for i in range(interval_length, len(bgs)):
         output_builder.append(list(curr))
@@ -28,6 +34,7 @@ def bin_into_intervals(bgs, interval_length, delta=5):
         curr.append(bg_list[i])
 
     return np.matrix(output_builder)
+
 
 x = bin_into_intervals(bgs, 60)
 km = TimeSeriesKMeans(n_clusters=20, verbose=True, random_state=seed)
@@ -41,14 +48,14 @@ for yi in range(20):
     plt.subplot(4, 5, yi + 1)
     i = 0
     for xx in x[y_pred == yi]:
-        if i > 5: continue
-        plt.plot(xx.ravel(), "k-", alpha=.2)
+        if i > 5:
+            continue
+        plt.plot(xx.ravel(), "k-", alpha=0.2)
         i += 1
     plt.plot(km.cluster_centers_[yi].ravel(), "r-")
     plt.xlim(0, sz)
     plt.ylim(0, 400)
-    plt.text(0.55, 0.85,'Cluster %d' % (yi + 1),
-             transform=plt.gca().transAxes)
+    plt.text(0.55, 0.85, "Cluster %d" % (yi + 1), transform=plt.gca().transAxes)
     if yi == 1:
         plt.title("Euclidean $k$-means")
 plt.show()
