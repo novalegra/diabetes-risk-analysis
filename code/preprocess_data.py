@@ -90,6 +90,12 @@ def find_bgs_before_and_after(initial_df, bgs, bg_consideration_interval=180):
 
 
 def make_dose_df(initial_df):
+    # This column is commonly missing
+    if not "extended" in initial_df:
+        initial_df["extended"] = 0
+    if not "percent" in initial_df:
+        initial_df["percent"] = None
+
     # Create a df with dosing information
     try:
         doses = initial_df[
